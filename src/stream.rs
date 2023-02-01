@@ -20,7 +20,7 @@ pub enum StreamMessageDataType {
 pub struct StreamMessage {
     // type of data we are sending to user
     #[serde(rename = "typ")]
-    pub data_type: StreamMessageDataType,
+    pub msg_type: u8,
 
     // source channel
     #[serde(rename = "chn")]
