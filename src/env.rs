@@ -21,6 +21,10 @@ fn default_redis_password() -> String {
     String::from("")
 }
 
+fn default_redis_sentinel_master() -> String {
+    String::from("mymaster")
+}
+
 #[derive(Deserialize, Default, Clone, Debug)]
 pub struct RedisSettings {
     pub redis_address: Option<String>,
@@ -29,8 +33,8 @@ pub struct RedisSettings {
     pub redis_password: String,
     #[serde(default = "default_redis_db")]
     pub redis_db: String,
-    #[allow(dead_code)]
-    redis_sentinel_master: Option<String>,
+    #[serde(default = "default_redis_sentinel_master")]
+    pub redis_sentinel_master: String,
 }
 
 fn default_debug() -> bool {
