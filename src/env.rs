@@ -64,15 +64,15 @@ pub struct Env {
     #[serde(default = "default_private_port")]
     pub private_port: u16,
 
-    pub cluster: Uuid,
+    // pub cluster: Uuid,
 
-    pub user: Uuid,
+    // pub user: Uuid,
 
-    pub artifact: Uuid,
+    // pub artifact: Uuid,
 
-    pub deployment: Uuid,
+    // pub deployment: Uuid,
 
-    pub secret: String,
+    // pub secret: String,
 
     #[serde(default = "default_topic_suffix")]
     pub topic_suffix: String,
