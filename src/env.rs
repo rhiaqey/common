@@ -1,6 +1,6 @@
 use rhiaqey_sdk::channel::ChannelList;
 use serde::Deserialize;
-use uuid::Uuid;
+// use uuid::Uuid;
 
 #[derive(Deserialize, Default, Clone, Debug)]
 pub struct KubernetesEnv {
@@ -77,8 +77,8 @@ pub struct Env {
     #[serde(default = "default_topic_suffix")]
     pub topic_suffix: String,
 
-    #[serde(rename = "type")]
-    pub deployment_type: DeploymentType,
+    // #[serde(rename = "type")]
+    // pub deployment_type: DeploymentType,
 
     #[serde(default = "default_host")]
     pub host: String,
