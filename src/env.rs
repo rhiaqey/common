@@ -98,8 +98,8 @@ pub struct Env {
     // #[serde(default = "default_size")]
     // pub size: ClusterSize,
 
-    // #[serde(flatten)]
-    // pub redis: RedisSettings,
+    #[serde(flatten)]
+    pub redis: RedisSettings,
 
     #[serde(default)]
     pub channels: ChannelList,
