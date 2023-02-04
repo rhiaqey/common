@@ -13,12 +13,24 @@ pub struct KubernetesEnv {
     pub k8s_node_ip: Option<String>,
 }
 
-#[derive(Deserialize, Clone, Debug)]
-#[serde(rename_all = "lowercase")]
-pub enum DeploymentType {
-    Hub,
-    Gateway,
-    Producer,
+fn default_redis_db() -> String {
+    "0".to_string()
+}
+
+fn default_redis_password() -> String {
+    String::from("")
+}
+
+#[derive(Deserialize, Default, Clone, Debug)]
+pub struct RedisSettings {
+    pub redis_address: Option<String>,
+    pub redis_sentinel_addresses: Option<String>,
+    #[serde(default = "default_redis_password")]
+    pub redis_password: String,
+    #[serde(default = "default_redis_db")]
+    pub redis_db: String,
+    #[allow(dead_code)]
+    redis_sentinel_master: Option<String>,
 }
 
 fn default_debug() -> bool {
