@@ -1,6 +1,6 @@
 use rhiaqey_sdk::channel::ChannelList;
 use serde::Deserialize;
-// use uuid::Uuid;
+use crate::redis::RedisSettings;
 
 #[derive(Deserialize, Default, Clone, Debug)]
 pub struct KubernetesEnv {
@@ -11,30 +11,6 @@ pub struct KubernetesEnv {
     pub k8s_pod_service_account: Option<String>,
     pub k8s_node_name: Option<String>,
     pub k8s_node_ip: Option<String>,
-}
-
-fn default_redis_db() -> String {
-    "0".to_string()
-}
-
-fn default_redis_password() -> String {
-    String::from("")
-}
-
-fn default_redis_sentinel_master() -> String {
-    String::from("mymaster")
-}
-
-#[derive(Deserialize, Default, Clone, Debug)]
-pub struct RedisSettings {
-    pub redis_address: Option<String>,
-    pub redis_sentinel_addresses: Option<String>,
-    #[serde(default = "default_redis_password")]
-    pub redis_password: String,
-    #[serde(default = "default_redis_db")]
-    pub redis_db: String,
-    #[serde(default = "default_redis_sentinel_master")]
-    pub redis_sentinel_master: String,
 }
 
 fn default_debug() -> bool {
