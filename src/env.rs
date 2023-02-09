@@ -1,4 +1,3 @@
-use rhiaqey_sdk::channel::ChannelList;
 use serde::Deserialize;
 use crate::redis::RedisSettings;
 
@@ -80,9 +79,6 @@ pub struct Env {
 
     #[serde(flatten)]
     pub redis: RedisSettings,
-
-    #[serde(default)]
-    pub channels: ChannelList,
 
 }
 
