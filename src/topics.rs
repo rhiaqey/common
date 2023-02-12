@@ -10,6 +10,10 @@ pub fn hub_to_publisher_pubsub_topic(namespace: String, publisher_name: String) 
     format!("{}:publishers:{}:streams:pubsub", namespace, publisher_name)
 }
 
+pub fn hub_channels_key(namespace: String) -> String {
+    format!("{}:hub:channels", namespace)
+}
+
 pub fn publisher_channels_key(namespace: String, publisher_name: String) -> String {
     format!("{}:publishers:{}:channels", namespace, publisher_name)
 }
