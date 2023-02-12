@@ -6,7 +6,7 @@ pub fn hub_raw_to_hub_clean_pubsub_topic(namespace: String, channel: String) -> 
     format!("{}:hub:channels:{}:clean", namespace, channel)
 }
 
-pub fn hub_to_publishers_pubsub_topic(namespace: String, publisher_name: String) -> String {
+pub fn hub_to_publisher_pubsub_topic(namespace: String, publisher_name: String) -> String {
     format!("{}:publishers:{}:streams:pubsub", namespace, publisher_name)
 }
 
