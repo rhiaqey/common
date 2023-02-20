@@ -1,5 +1,5 @@
-use serde::Deserialize;
 use rustis::client::Client;
+use serde::Deserialize;
 
 fn default_redis_db() -> String {
     "0".to_string()
@@ -41,6 +41,10 @@ pub async fn connect(settings: RedisSettings) -> Option<Client> {
         ),
     };
 
-    let result = Client::connect(connect_uri).await.unwrap();
-    Some(result)
+    let result = Client::connect(connect_uri).await;
+    if result.is_err() {
+        None
+    } else {
+        Some(result.unwrap())
+    }
 }

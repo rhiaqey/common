@@ -123,6 +123,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "fast-float"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "95765f67b4b18863968b4a1bd5bb576f732b29a4a28c7cd84c09fa3e2875f33c"
+
+[[package]]
 name = "form_urlencoded"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -481,14 +487,15 @@ dependencies = [
 
 [[package]]
 name = "rustis"
-version = "0.8.2"
+version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "600ef8105050f7aef35c49a527ad9b9faf936ead0f8c3ef0cad01cceeaecdbeb"
+checksum = "db8d3de938874cbab27bac430bf08387fcce10b77d86c5c7684c93fd41c33f56"
 dependencies = [
  "atoi",
  "bytes",
  "crc16",
  "dtoa",
+ "fast-float",
  "futures",
  "itoa",
  "log",
@@ -564,9 +571,9 @@ dependencies = [
 
 [[package]]
 name = "slab"
-version = "0.4.7"
+version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4614a76b2a8be0058caa9dbbaf66d988527d86d003c11a94fbd335d7661edcef"
+checksum = "6528351c9bc8ab22353f9d776db39a20288e8d6c37ef8cfe3317cf875eecfc2d"
 dependencies = [
  "autocfg",
 ]

@@ -1,5 +1,5 @@
-use serde::Deserialize;
 use crate::redis::RedisSettings;
+use serde::Deserialize;
 
 #[derive(Deserialize, Default, Clone, Debug)]
 pub struct KubernetesEnv {
@@ -12,74 +12,38 @@ pub struct KubernetesEnv {
     pub k8s_node_ip: Option<String>,
 }
 
-fn default_debug() -> bool {
-    false
+fn default_public_port() -> Option<u16> {
+    Some(3000)
 }
 
-fn default_public_port() -> u16 {
-    3000
+fn default_private_port() -> Option<u16> {
+    Some(3001)
 }
-
-fn default_private_port() -> u16 {
-    3001
-}
-
-fn default_host() -> String {
-    String::from("localhost")
-}
-
-// fn default_size() -> ClusterSize {
-//    ClusterSize::Small
-// }
-
-fn default_topic_suffix() -> String { String::from("out") }
 
 #[derive(Deserialize, Clone, Debug)]
 pub struct Env {
-
+    /// Each pod will have a different id
     pub id: String,
 
+    /// All deployment pods will have the same name
     pub name: String,
 
-    #[serde(default = "default_debug")]
-    pub debug: bool,
-
+    /// Namespace of the k8s installation
     pub namespace: String,
 
     #[serde(flatten)]
     pub k8s: KubernetesEnv,
 
+    /// The public facing port that is only useful for gateways
     #[serde(default = "default_public_port")]
-    pub public_port: u16,
+    pub public_port: Option<u16>,
 
+    /// Internal port for all http interactions
     #[serde(default = "default_private_port")]
-    pub private_port: u16,
-
-    // pub cluster: Uuid,
-
-    // pub user: Uuid,
-
-    // pub artifact: Uuid,
-
-    // pub deployment: Uuid,
-
-    // pub secret: String,
-
-    #[serde(default = "default_topic_suffix")]
-    pub topic_suffix: String,
-
-    // #[serde(rename = "type")]
-    // pub deployment_type: DeploymentType,
-
-    #[serde(default = "default_host")]
-    pub host: String,
-
-    // #[serde(default = "default_size")]
-    // pub size: ClusterSize,
+    pub private_port: Option<u16>,
 
     #[serde(flatten)]
     pub redis: RedisSettings,
-
 }
 
 pub fn parse_env() -> Env {
