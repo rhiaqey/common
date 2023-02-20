@@ -1,4 +1,5 @@
 use rustis::client::Client;
+use rustis::commands::{ConnectionCommands, PingOptions};
 use serde::Deserialize;
 
 fn default_redis_db() -> String {
@@ -47,4 +48,23 @@ pub async fn connect(settings: RedisSettings) -> Option<Client> {
     } else {
         Some(result.unwrap())
     }
+}
+
+async fn connect_and_ping(config: RedisSettings) -> Option<Client> {
+    let redis_connection = connect(config).await;
+    if redis_connection.is_none() {
+        return None;
+    }
+
+    let result: String = redis_connection
+        .clone()
+        .unwrap()
+        .ping(PingOptions::default().message("hello"))
+        .await
+        .unwrap();
+    if result != "hello" {
+        return None;
+    }
+
+    redis_connection
 }
