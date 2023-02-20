@@ -50,7 +50,7 @@ pub async fn connect(settings: RedisSettings) -> Option<Client> {
     }
 }
 
-async fn connect_and_ping(config: RedisSettings) -> Option<Client> {
+pub async fn connect_and_ping(config: RedisSettings) -> Option<Client> {
     let redis_connection = connect(config).await;
     if redis_connection.is_none() {
         return None;
