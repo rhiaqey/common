@@ -21,3 +21,17 @@ pub fn publisher_channels_key(namespace: String, publisher_name: String) -> Stri
 pub fn publisher_settings_key(namespace: String, publisher_name: String) -> String {
     format!("{}:publishers:{}:settings", namespace, publisher_name)
 }
+
+pub fn publisher_channels_snapshot(
+    namespace: String,
+    publisher_name: String,
+    key: String,
+    category: String,
+) -> String {
+    format!(
+        "{}:keys:{}:{}",
+        publisher_channels_key(namespace, publisher_name),
+        key,
+        category
+    )
+}
