@@ -32,7 +32,7 @@ pub struct ClientMessage {
     pub key: String,
 
     // Any value
-    #[serde(rename = "val")]
+    #[serde(flatten, rename = "val")]
     pub value: ClientMessageValue,
 
     #[serde(rename = "tag", skip_serializing_if = "Option::is_none")]
