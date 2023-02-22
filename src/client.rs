@@ -13,10 +13,9 @@ pub struct ClientMessageValueClientConnected {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(untagged)]
 pub enum ClientMessageValue {
-    #[serde(flatten)]
     ClientConnected(ClientMessageValueClientConnected),
-    #[serde(flatten)]
     Data(MessageValue),
 }
 
