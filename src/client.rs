@@ -14,7 +14,9 @@ pub struct ClientMessageValueClientConnected {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum ClientMessageValue {
+    #[serde(flatten)]
     ClientConnected(ClientMessageValueClientConnected),
+    #[serde(flatten)]
     Data(MessageValue),
 }
 
@@ -32,7 +34,7 @@ pub struct ClientMessage {
     pub key: String,
 
     // Any value
-    #[serde(flatten, rename = "val")]
+    #[serde(rename = "val")]
     pub value: ClientMessageValue,
 
     #[serde(rename = "tag", skip_serializing_if = "Option::is_none")]
