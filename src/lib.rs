@@ -1,3 +1,4 @@
+pub mod client;
 pub mod env;
 pub mod pubsub;
 pub mod redis;

@@ -1,14 +1,24 @@
 use rhiaqey_sdk::message::MessageValue;
-use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub enum StreamMessageDataType {
-    Data = 0,        // sent data from hub to client
-    PartialData = 1, // sent by the hub to the client with partial data (used for partial updates)
+pub enum ClientMessageDataType {
+    ClientConnect = 0, // sent by the hub to the client with session id
+    Data = 1,          // sent data from hub to client
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct StreamMessage {
+pub struct ClientMessageValueClientConnected {
+    pub client_id: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub enum ClientMessageValue {
+    ClientConnected(ClientMessageValueClientConnected),
+    Data(MessageValue),
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct ClientMessage {
     // type of data we are sending to user
     #[serde(rename = "typ")]
     pub data_type: u8,
@@ -22,7 +32,7 @@ pub struct StreamMessage {
 
     // Any value
     #[serde(rename = "val")]
-    pub value: MessageValue,
+    pub value: ClientMessageValue,
 
     #[serde(rename = "tag", skip_serializing_if = "Option::is_none")]
     pub tag: Option<String>,
@@ -33,23 +43,6 @@ pub struct StreamMessage {
 
     #[serde(rename = "siz", skip_serializing_if = "Option::is_none")]
     pub size: Option<usize>,
-
-    // target specific client ids
-    #[serde(rename = "cid", skip_serializing_if = "Option::is_none")]
-    pub client_ids: Option<Vec<String>>,
-
-    // target specific group ids
-    #[serde(rename = "gid", skip_serializing_if = "Option::is_none")]
-    pub group_ids: Option<Vec<String>>,
-
-    // target specific user ids
-    #[serde(rename = "uid", skip_serializing_if = "Option::is_none")]
-    pub user_ids: Option<Vec<String>>,
-
-    // If timestamp is provided there will a check in timestamps. If latest entry in database is
-    // older than the message then we do not store the new message
-    #[serde(rename = "tms", skip_serializing_if = "Option::is_none")]
-    pub timestamp: Option<u64>,
 
     // hub_id is actually hub id. useful for debugging
     #[serde(rename = "hid", skip_serializing_if = "Option::is_none")]
