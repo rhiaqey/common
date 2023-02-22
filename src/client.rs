@@ -43,9 +43,6 @@ pub struct ClientMessage {
     #[serde(rename = "cat", skip_serializing_if = "Option::is_none")]
     pub category: Option<String>,
 
-    #[serde(rename = "siz", skip_serializing_if = "Option::is_none")]
-    pub size: Option<usize>,
-
     // hub_id is actually hub id. useful for debugging
     #[serde(rename = "hid", skip_serializing_if = "Option::is_none")]
     pub hub_id: Option<String>,
