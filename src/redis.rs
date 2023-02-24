@@ -1,3 +1,4 @@
+use log::warn;
 use rustis::client::Client;
 use rustis::commands::{ConnectionCommands, PingOptions};
 use serde::Deserialize;
@@ -39,7 +40,8 @@ pub async fn connect(settings: RedisSettings) -> Option<Client> {
     };
 
     let result = Client::connect(connect_uri).await;
-    if result.is_err() {
+    if let Err(e) = result {
+        warn!("connection error: {}", e);
         None
     } else {
         Some(result.unwrap())
