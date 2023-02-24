@@ -1,21 +1,30 @@
+use rhiaqey_sdk::channel::Channel;
 use rhiaqey_sdk::message::MessageValue;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum ClientMessageDataType {
-    ClientConnect = 0, // sent by the hub to the client with session id
-    Data = 1,          // sent data from hub to client
+    ClientConnection = 0,           // sent by the hub to the client with unique client id
+    ClientChannelSubscription = 1,  // set by the hub to the client when they subscribe to a channel
+    Data = 10,                      // sent data from hub to client
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct ClientMessageValueClientConnected {
+pub struct ClientMessageValueClientConnection {
     pub client_id: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct ClientMessageValueClientChannelSubscription {
+    pub client_id: String,
+    pub channel: Channel
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(untagged)]
 pub enum ClientMessageValue {
-    ClientConnected(ClientMessageValueClientConnected),
+    ClientConnection(ClientMessageValueClientConnection),
+    ClientChannelSubscription(ClientMessageValueClientChannelSubscription),
     Data(MessageValue),
 }
 

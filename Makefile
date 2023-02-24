@@ -1,3 +1,6 @@
+.PHONY: dev
+dev: build
+
 .PHONY: build
 build:
 	cargo +nightly build
