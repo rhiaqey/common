@@ -2,43 +2,39 @@ use rustis::client::Client;
 use rustis::commands::{ConnectionCommands, PingOptions};
 use serde::Deserialize;
 
-fn default_redis_db() -> String {
-    "0".to_string()
+fn default_redis_db() -> Option<String> {
+    Some("0".to_string())
 }
 
-fn default_redis_password() -> String {
-    String::from("")
-}
-
-fn default_redis_sentinel_master() -> String {
-    String::from("mymaster")
+fn default_redis_sentinel_master() -> Option<String> {
+    Some(String::from("mymaster"))
 }
 
 #[derive(Deserialize, Default, Clone, Debug)]
 pub struct RedisSettings {
     pub redis_address: Option<String>,
     pub redis_sentinel_addresses: Option<String>,
-    #[serde(default = "default_redis_password")]
-    pub redis_password: String,
+    pub redis_password: Option<String>,
     #[serde(default = "default_redis_db")]
-    pub redis_db: String,
+    pub redis_db: Option<String>,
     #[serde(default = "default_redis_sentinel_master")]
-    pub redis_sentinel_master: String,
+    pub redis_sentinel_master: Option<String>,
 }
 
 pub async fn connect(settings: RedisSettings) -> Option<Client> {
+    let password = settings.redis_password.unwrap();
     let connect_uri = match settings.redis_address {
         None => format!(
             "redis+sentinel://:{}@{}/{}?sentinel_password={}",
-            settings.redis_password,
+            password.clone(),
             settings.redis_sentinel_addresses.unwrap(),
-            settings.redis_sentinel_master,
-            settings.redis_password
+            settings.redis_sentinel_master.unwrap(),
+            password.clone()
         ),
-        Some(_) => format!(
+        Some(address) => format!(
             "redis://:{}@{}",
-            settings.redis_password,
-            settings.redis_address.unwrap()
+            password,
+            address
         ),
     };
 
