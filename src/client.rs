@@ -16,7 +16,6 @@ pub struct ClientMessageValueClientConnection {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ClientMessageValueClientChannelSubscription {
-    pub client_id: String,
     pub channel: Channel
 }
 
@@ -35,10 +34,10 @@ pub struct ClientMessage {
     pub data_type: u8,
 
     // source channel
-    #[serde(rename = "chn")]
+    #[serde(rename = "chn", skip_serializing_if = "String::is_empty")]
     pub channel: String,
 
-    #[serde(rename = "key")]
+    #[serde(rename = "key", skip_serializing_if = "String::is_empty")]
     pub key: String,
 
     // Any value
