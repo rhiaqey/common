@@ -7,6 +7,7 @@ pub enum ClientMessageDataType {
     ClientConnection = 0,           // sent by the hub to the client with unique client id
     ClientChannelSubscription = 1,  // set by the hub to the client when they subscribe to a channel
     Data = 10,                      // sent data from hub to client
+    Ping = 100,                     // sent by the hub to keep the client connect alive
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -25,6 +26,7 @@ pub enum ClientMessageValue {
     ClientConnection(ClientMessageValueClientConnection),
     ClientChannelSubscription(ClientMessageValueClientChannelSubscription),
     Data(MessageValue),
+    Ping(u64)
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
