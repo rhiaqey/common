@@ -1,5 +1,6 @@
 use crate::stream::StreamMessage;
 use rhiaqey_sdk::channel::ChannelList;
+use rhiaqey_sdk::message::MessageValue;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -7,6 +8,7 @@ use serde::{Deserialize, Serialize};
 pub enum RPCMessageData {
     NotifyClients(StreamMessage),
     AssignChannels(ChannelList),
+    UpdateSettings(MessageValue)
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
