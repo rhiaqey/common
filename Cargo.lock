@@ -454,7 +454,7 @@ dependencies = [
 [[package]]
 name = "rhiaqey-sdk"
 version = "0.1.0"
-source = "git+https://github.com/rhiaqey/sdk.git#34740f1974a1eea8631203df65e9c6bb93ef97b5"
+source = "git+https://github.com/rhiaqey/sdk.git#0431429760ce332c40dd1f83cc27b6bd4001e24c"
 dependencies = [
  "async-trait",
  "serde",

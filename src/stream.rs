@@ -24,6 +24,11 @@ pub struct StreamMessage {
     #[serde(rename = "val")]
     pub value: MessageValue,
 
+    // If timestamp is provided there will a check in timestamps. If latest entry in database is
+    // older than the message then we do not store the new message
+    #[serde(rename = "tms", skip_serializing_if = "Option::is_none")]
+    pub timestamp: Option<u64>,
+
     #[serde(rename = "tag", skip_serializing_if = "Option::is_none")]
     pub tag: Option<String>,
 
@@ -45,11 +50,6 @@ pub struct StreamMessage {
     // target specific user ids
     #[serde(rename = "uid", skip_serializing_if = "Option::is_none")]
     pub user_ids: Option<Vec<String>>,
-
-    // If timestamp is provided there will a check in timestamps. If latest entry in database is
-    // older than the message then we do not store the new message
-    #[serde(rename = "tms", skip_serializing_if = "Option::is_none")]
-    pub timestamp: Option<u64>,
 
     // hub_id is actually hub id. useful for debugging
     #[serde(rename = "hid", skip_serializing_if = "Option::is_none")]
