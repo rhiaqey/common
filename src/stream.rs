@@ -1,4 +1,6 @@
+use rhiaqey_sdk::gateway::GatewayMessage;
 use rhiaqey_sdk::message::MessageValue;
+use rhiaqey_sdk::producer::ProducerMessage;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -58,4 +60,46 @@ pub struct StreamMessage {
     // gateway or producer id, useful for debugging
     #[serde(rename = "pid", skip_serializing_if = "Option::is_none")]
     pub publisher_id: Option<String>,
+}
+
+impl From<ProducerMessage> for StreamMessage {
+    fn from(value: ProducerMessage) -> Self {
+        StreamMessage{
+            data_type: StreamMessageDataType::Data as u8,
+            key: value.key,
+            value: value.value,
+            timestamp: value.timestamp,
+            tag: value.tag,
+            category: value.category,
+            size: value.size,
+            // stream message only
+            channel: String::from(""),
+            client_ids: None,
+            group_ids: None,
+            user_ids: None,
+            hub_id: None,
+            publisher_id: None,
+        }
+    }
+}
+
+impl From<GatewayMessage> for StreamMessage {
+    fn from(value: GatewayMessage) -> Self {
+        StreamMessage{
+            data_type: StreamMessageDataType::Data as u8,
+            key: value.key,
+            value: value.value,
+            timestamp: value.timestamp,
+            tag: value.tag,
+            category: value.category,
+            size: value.size,
+            client_ids: value.client_ids,
+            group_ids: value.group_ids,
+            user_ids: value.user_ids,
+            // stream message only
+            channel: String::from(""),
+            hub_id: None,
+            publisher_id: None,
+        }
+    }
 }
