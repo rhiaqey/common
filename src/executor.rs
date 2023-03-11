@@ -27,6 +27,10 @@ impl Executor {
         self.env.name.clone()
     }
 
+    pub fn get_public_port(&self) -> u16 {
+        self.env.public_port.unwrap()
+    }
+
     pub fn get_private_port(&self) -> u16 {
         self.env.private_port.unwrap()
     }
