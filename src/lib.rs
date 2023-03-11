@@ -4,3 +4,4 @@ pub mod pubsub;
 pub mod redis;
 pub mod stream;
 pub mod topics;
+pub mod executor;
