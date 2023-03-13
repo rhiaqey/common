@@ -146,8 +146,6 @@ impl Executor {
         stream_msg.publisher_id = Some(self.env.id.clone());
         // }
 
-        let xadd_options = XAddOptions::default();
-
         for channel in self.channels.read().await.iter() {
             stream_msg.channel = channel.name.to_string();
 
@@ -160,9 +158,10 @@ impl Executor {
                 channel.name.clone(),
             );
 
+            let xadd_options = XAddOptions::default();
             let trim_options = XTrimOptions::max_len(
                 XTrimOperator::Approximately,
-                stream_message.size.unwrap_or(channel_size) as i64,
+                channel.size as i64,
             );
 
             info!(
