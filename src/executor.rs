@@ -1,7 +1,7 @@
 use log::{debug, info, trace, warn};
 use rhiaqey_sdk::channel::{Channel, ChannelList};
 use rustis::client::{Client, PubSubMessage, PubSubStream};
-use rustis::commands::{PubSubCommands, StreamCommands, StringCommands, XAddOptions};
+use rustis::commands::{PubSubCommands, StreamCommands, StringCommands, XAddOptions, XTrimOperator, XTrimOptions};
 use serde::de::DeserializeOwned;
 use std::fmt::Debug;
 use std::sync::Arc;
@@ -146,6 +146,8 @@ impl Executor {
         stream_msg.publisher_id = Some(self.env.id.clone());
         // }
 
+        let xadd_options = XAddOptions::default();
+
         for channel in self.channels.read().await.iter() {
             stream_msg.channel = channel.name.to_string();
 
@@ -156,6 +158,11 @@ impl Executor {
             let topic = topics::publishers_to_hub_stream_topic(
                 self.env.namespace.clone(),
                 channel.name.clone(),
+            );
+
+            let trim_options = XTrimOptions::max_len(
+                XTrimOperator::Approximately,
+                stream_message.size.unwrap_or(channel_size) as i64,
             );
 
             info!(
@@ -174,7 +181,7 @@ impl Executor {
                         topic.clone(),
                         "*",
                         [("raw", data.clone())],
-                        XAddOptions::default(),
+                        xadd_options.trim_options(trim_options),
                     )
                     .await
                     .unwrap();
