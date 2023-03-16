@@ -1,6 +1,7 @@
 use rhiaqey_sdk::channel::Channel;
 use rhiaqey_sdk::message::MessageValue;
 use serde::{Deserialize, Serialize};
+use crate::stream::StreamMessage;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum ClientMessageDataType {
@@ -61,4 +62,19 @@ pub struct ClientMessage {
     // gateway or producer id, useful for debugging
     #[serde(rename = "pid", skip_serializing_if = "Option::is_none")]
     pub publisher_id: Option<String>,
+}
+
+impl From<StreamMessage> for ClientMessage {
+    fn from(value: StreamMessage) -> Self {
+        ClientMessage{
+            data_type: ClientMessageDataType::Data as u8,
+            channel: value.channel,
+            key: value.key,
+            value: ClientMessageValue::Data(value.value),
+            tag: value.tag,
+            category: value.category,
+            hub_id: value.hub_id,
+            publisher_id: value.publisher_id,
+        }
+    }
 }
