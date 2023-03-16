@@ -13,6 +13,7 @@ pub enum ClientMessageDataType {
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ClientMessageValueClientConnection {
     pub client_id: String,
+    pub hub_id: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
