@@ -22,6 +22,10 @@ pub fn publisher_channels_key(namespace: String, publisher_name: String) -> Stri
     format!("{}:publishers:{}:channels", namespace, publisher_name)
 }
 
+pub fn hub_settings_key(namespace: String) -> String {
+    format!("{}:hub:settings", namespace)
+}
+
 pub fn publisher_settings_key(namespace: String, publisher_name: String) -> String {
     format!("{}:publishers:{}:settings", namespace, publisher_name)
 }
