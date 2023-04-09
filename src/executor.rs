@@ -40,6 +40,10 @@ impl Executor {
         *locked_channels = channels;
     }
 
+    pub async fn get_channel_count(&self) -> usize {
+        self.channels.read().await.len()
+    }
+
     pub async fn read_channels(&self) -> Vec<Channel> {
         let channels_key =
             topics::publisher_channels_key(self.env.namespace.clone(), self.env.name.clone());
