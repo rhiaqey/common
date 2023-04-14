@@ -31,6 +31,9 @@ pub struct Env {
     /// Namespace of the k8s installation
     pub namespace: String,
 
+    /// Required
+    pub secret: String,
+
     #[serde(flatten)]
     pub k8s: KubernetesEnv,
 
