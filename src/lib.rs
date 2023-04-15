@@ -5,3 +5,4 @@ pub mod redis;
 pub mod stream;
 pub mod topics;
 pub mod executor;
+pub mod error;
