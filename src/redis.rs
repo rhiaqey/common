@@ -2,7 +2,8 @@ use log::warn;
 use rustis::client::Client;
 use rustis::commands::{ConnectionCommands, PingOptions};
 use rustis::Error;
-use serde::Deserialize;
+use rustis::resp::{deserialize_byte_buf, PrimitiveResponse};
+use serde::{Deserialize, Serialize};
 use crate::error::RhiaqeyError;
 
 fn default_redis_db() -> Option<String> {
@@ -69,7 +70,7 @@ pub async fn connect_and_ping(config: RedisSettings) -> Option<Client> {
     redis_connection
 }
 
-impl From<rustis::Error> for RhiaqeyError {
+impl From<Error> for RhiaqeyError {
     fn from(value: Error) -> Self {
         RhiaqeyError{
             code: None,
@@ -78,3 +79,7 @@ impl From<rustis::Error> for RhiaqeyError {
         }
     }
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RhiaqeyBufVec(#[serde(deserialize_with = "deserialize_byte_buf")] pub Vec<u8>);
+impl PrimitiveResponse for RhiaqeyBufVec {}
