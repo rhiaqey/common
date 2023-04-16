@@ -1,5 +1,8 @@
+use rsa::pkcs8::DecodePrivateKey;
+use rsa::{Oaep, PublicKey, RsaPrivateKey, RsaPublicKey};
 use crate::redis::RedisSettings;
 use serde::Deserialize;
+use crate::error::RhiaqeyError;
 
 #[derive(Deserialize, Default, Clone, Debug)]
 pub struct KubernetesEnv {
@@ -50,6 +53,53 @@ pub struct Env {
 
     #[serde(flatten)]
     pub redis: RedisSettings,
+}
+
+impl Env {
+    pub fn encrypt(&self, data: Vec<u8>) -> Result<Vec<u8>, RhiaqeyError> {
+        let mut rng = rand::thread_rng();
+        let padding = Oaep::new::<sha2::Sha256>();
+
+        let private_key = RsaPrivateKey::from_pkcs8_pem(self.private_key.as_str())
+            .map_err(|x| RhiaqeyError{
+                code: 1000,
+                message: x.to_string(),
+                error: Some(Box::new(x)),
+            }
+        )?;
+
+        let public_key = RsaPublicKey::from(&private_key);
+        let enc_data = public_key.encrypt(&mut rng, padding, data.as_slice())
+            .map_err(|x| RhiaqeyError{
+                code: 1001,
+                message: x.to_string(),
+                error: Some(Box::new(x))
+            })?;
+
+        Ok(enc_data)
+    }
+
+    pub fn decrypt(&self, data: Vec<u8>) -> Result<Vec<u8>, RhiaqeyError> {
+        let padding = Oaep::new::<sha2::Sha256>();
+
+        let private_key = RsaPrivateKey::from_pkcs8_pem(self.private_key.as_str())
+            .map_err(|x| RhiaqeyError{
+                code: 1002,
+                message: x.to_string(),
+                error: Some(Box::new(x)),
+            }
+        )?;
+
+        let dec_data = private_key.decrypt(padding, data.as_slice())
+            .map_err(|x| RhiaqeyError{
+                code: 1003,
+                message: x.to_string(),
+                error: Some(Box::new(x))
+            }
+        )?;
+
+        Ok(dec_data)
+    }
 }
 
 pub fn parse_env() -> Env {
