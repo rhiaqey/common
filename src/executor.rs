@@ -5,10 +5,12 @@ use rustis::commands::{PubSubCommands, StreamCommands, StringCommands, XAddOptio
 use serde::de::DeserializeOwned;
 use std::fmt::Debug;
 use std::sync::Arc;
+use rhiaqey_sdk::message::MessageValue;
 use tokio::sync::{Mutex, RwLock};
 use crate::env::Env;
+use crate::error::RhiaqeyError;
 use crate::pubsub::RPCMessage;
-use crate::redis::connect_and_ping;
+use crate::redis::{connect_and_ping, RhiaqeyBufVec};
 use crate::stream::{StreamMessage};
 use crate::topics;
 
@@ -33,6 +35,10 @@ impl Executor {
 
     pub fn get_private_port(&self) -> u16 {
         self.env.private_port.unwrap()
+    }
+
+    pub fn get_namespace(&self) -> String {
+        self.env.namespace.clone()
     }
 
     pub async fn set_channels(&mut self, channels: Vec<Channel>) {
@@ -69,30 +75,27 @@ impl Executor {
         channel_list.channels
     }
 
-    pub async fn read_settings<T: DeserializeOwned + Default + Debug>(&self) -> Option<T> {
+    pub async fn read_settings<T: DeserializeOwned + Default + Debug>(&self) -> Result<T, RhiaqeyError> {
         let settings_key =
-            topics::publisher_settings_key(self.env.namespace.clone(), self.env.name.clone());
+            topics::publisher_settings_key(self.get_namespace(), self.get_name());
 
-        let settings_result = self
+        let result: RhiaqeyBufVec = self
             .redis
             .lock()
             .await
             .as_mut()
             .unwrap()
-            .get(settings_key.clone())
-            .await;
+            .get(settings_key)
+            .await?;
+        debug!("encrypted settings retrieved");
 
-        if settings_result.is_err() {
-            return None;
-        }
+        let data = self.env.decrypt(result.0)?;
+        debug!("raw data decrypted");
 
-        let result: String = settings_result.unwrap();
+        let settings = MessageValue::Binary(data).decode::<T>()?;
+        debug!("decrypted data decoded into settings");
 
-        let settings: T = serde_json::from_str(result.as_str()).unwrap_or(T::default());
-
-        debug!("settings from {} retrieved {:?}", settings_key, settings);
-
-        Some(settings)
+        Ok(settings)
     }
 
     pub async fn setup(config: Env) -> Result<Executor, String> {
