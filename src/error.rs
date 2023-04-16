@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct RhiaqeyError {
-    pub code: i32,
+    pub code: Option<i32>,
     pub message: String,
     #[serde(skip_serializing, skip_deserializing)]
     pub error: Option<Box<dyn Error>>,
@@ -28,7 +28,7 @@ impl Error for RhiaqeyError {
 
 impl RhiaqeyError {
     pub fn create(code: i32, message: String) -> RhiaqeyError {
-        RhiaqeyError { code, message, error: None }
+        RhiaqeyError { code: Some(code), message, error: None }
     }
 }
 

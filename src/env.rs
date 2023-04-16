@@ -62,7 +62,7 @@ impl Env {
 
         let private_key = RsaPrivateKey::from_pkcs8_pem(self.private_key.as_str())
             .map_err(|x| RhiaqeyError{
-                code: 1000,
+                code: None,
                 message: x.to_string(),
                 error: Some(Box::new(x)),
             }
@@ -71,7 +71,7 @@ impl Env {
         let public_key = RsaPublicKey::from(&private_key);
         let enc_data = public_key.encrypt(&mut rng, padding, data.as_slice())
             .map_err(|x| RhiaqeyError{
-                code: 1001,
+                code: None,
                 message: x.to_string(),
                 error: Some(Box::new(x))
             })?;
@@ -84,7 +84,7 @@ impl Env {
 
         let private_key = RsaPrivateKey::from_pkcs8_pem(self.private_key.as_str())
             .map_err(|x| RhiaqeyError{
-                code: 1002,
+                code: None,
                 message: x.to_string(),
                 error: Some(Box::new(x)),
             }
@@ -92,7 +92,7 @@ impl Env {
 
         let dec_data = private_key.decrypt(padding, data.as_slice())
             .map_err(|x| RhiaqeyError{
-                code: 1003,
+                code: None,
                 message: x.to_string(),
                 error: Some(Box::new(x))
             }
