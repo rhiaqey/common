@@ -42,6 +42,16 @@ impl From<rustis::Error> for RhiaqeyError {
     }
 }
 
+impl From<serde_json::Error> for RhiaqeyError {
+    fn from(value: serde_json::Error) -> Self {
+        RhiaqeyError{
+            code: None,
+            message: value.to_string(),
+            error: Some(Box::new(value))
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::error::{RhiaqeyError};
