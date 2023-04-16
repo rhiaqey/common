@@ -32,7 +32,10 @@ pub struct Env {
     pub namespace: String,
 
     /// Required
-    pub secret: String,
+    pub private_key: String,
+
+    /// Required
+    pub public_key: String,
 
     #[serde(flatten)]
     pub k8s: KubernetesEnv,
