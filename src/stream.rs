@@ -2,7 +2,6 @@ use rhiaqey_sdk::gateway::GatewayMessage;
 use rhiaqey_sdk::message::MessageValue;
 use rhiaqey_sdk::producer::ProducerMessage;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use crate::error::RhiaqeyError;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -70,8 +69,8 @@ impl StreamMessage {
             RhiaqeyError{ code: None, message: e.to_string(), error: Some(Box::new(e)) })
     }
 
-    pub fn from_string(message: String) -> Result<Self, RhiaqeyError> {
-        serde_json::from_value::<Self>(Value::String(message)).map_err(|e|
+    pub fn from_string(message: &str) -> Result<StreamMessage, RhiaqeyError> {
+        serde_json::from_str::<StreamMessage>(message).map_err(|e|
             RhiaqeyError{ code: None, message: e.to_string(), error: Some(Box::new(e)) })
     }
 }
