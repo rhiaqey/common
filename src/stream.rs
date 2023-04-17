@@ -2,6 +2,7 @@ use rhiaqey_sdk::gateway::GatewayMessage;
 use rhiaqey_sdk::message::MessageValue;
 use rhiaqey_sdk::producer::ProducerMessage;
 use serde::{Deserialize, Serialize};
+use crate::error::RhiaqeyError;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum StreamMessageDataType {
@@ -60,6 +61,13 @@ pub struct StreamMessage {
     // gateway or producer id, useful for debugging
     #[serde(rename = "pid", skip_serializing_if = "Option::is_none")]
     pub publisher_id: Option<String>,
+}
+
+impl StreamMessage {
+    pub fn to_string(&self) -> Result<String, RhiaqeyError> {
+        serde_json::to_string(self).map_err(|e|
+            RhiaqeyError{ code: None, message: e.to_string(), error: Some(Box::new(e)) })
+    }
 }
 
 impl From<ProducerMessage> for StreamMessage {
