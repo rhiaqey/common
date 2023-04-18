@@ -27,3 +27,7 @@ tokio = { version = "1.27", features = [ "full", "rt", "rt-multi-thread" ] }
 rsa = { version = "0.8", features = [ "pem" ] }
 sha2 = "0.10"
 rand = "0.8"
+reqwest = { version = "0.11", optional = true }
+
+[features]
+reqwest = [ "dep:reqwest" ]

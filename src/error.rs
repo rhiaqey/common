@@ -74,6 +74,17 @@ impl From<serde_json::Error> for RhiaqeyError {
     }
 }
 
+#[cfg(feature = "reqwest")]
+impl From<reqwest::Error> for RhiaqeyError {
+    fn from(value: reqwest::Error) -> Self {
+        RhiaqeyError{
+            code: None,
+            message: value.to_string(),
+            error: Some(Box::new(value))
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::error::{RhiaqeyError};
