@@ -32,6 +32,22 @@ impl RhiaqeyError {
     }
 }
 
+impl From<String> for RhiaqeyError {
+    fn from(message: String) -> Self {
+        RhiaqeyError { code: None, message, error: None }
+    }
+}
+
+impl From<std::io::Error> for RhiaqeyError {
+    fn from(value: std::io::Error) -> Self {
+        RhiaqeyError{
+            code: None,
+            message: value.to_string(),
+            error: Some(Box::new(value))
+        }
+    }
+}
+
 impl From<rustis::Error> for RhiaqeyError {
     fn from(value: rustis::Error) -> Self {
         RhiaqeyError{
