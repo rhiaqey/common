@@ -38,6 +38,12 @@ impl From<String> for RhiaqeyError {
     }
 }
 
+impl From<(i32, String)> for RhiaqeyError {
+    fn from(message: (i32, String)) -> Self {
+        RhiaqeyError { code: Some(message.0), message: message.1, error: None }
+    }
+}
+
 impl From<std::io::Error> for RhiaqeyError {
     fn from(value: std::io::Error) -> Self {
         RhiaqeyError{
