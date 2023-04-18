@@ -10,7 +10,7 @@ pub enum StreamMessageDataType {
     PartialData = 1, // sent by the hub to the client with partial data (used for partial updates)
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
 pub struct StreamMessage {
     // type of data we are sending to user
     #[serde(rename = "typ")]
