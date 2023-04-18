@@ -153,6 +153,8 @@ impl Executor {
         stream_msg.publisher_id = Some(self.env.id.clone());
         // }
 
+        let tag = stream_msg.tag.clone().unwrap_or(String::from(""));
+
         for channel in self.channels.read().await.iter() {
             stream_msg.channel = channel.name.to_string();
 
@@ -186,7 +188,7 @@ impl Executor {
                     .xadd(
                         topic.clone(),
                         "*",
-                        [("raw", data.clone())],
+                        [("raw", data.clone()), ("tag", tag.clone())],
                         xadd_options.trim_options(trim_options),
                     )
                     .await
