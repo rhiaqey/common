@@ -178,7 +178,7 @@ impl Executor {
                 channel.name, channel.size, topic, stream_msg.timestamp,
             );
 
-            let tms = stream_msg.timestamp.map(|x| format!("{}", x)).unwrap_or(String::from(""));
+            let tms = stream_msg.timestamp.unwrap_or(0);
 
             if let Ok(data) = serde_json::to_string(&stream_msg) {
                 let id: String = self
@@ -190,7 +190,7 @@ impl Executor {
                     .xadd(
                         topic.clone(),
                         "*",
-                        [("raw", data.clone()), ("tag", tag.clone()), ("tms", tms)],
+                        [("raw", data.clone()), ("tag", tag.clone()), ("tms", format!("{}", tms))],
                         xadd_options.trim_options(trim_options),
                     )
                     .await
