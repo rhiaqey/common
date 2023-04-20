@@ -20,6 +20,7 @@ pub struct Executor {
     redis: Arc<Mutex<Option<Client>>>,
 }
 
+#[derive(Default, Clone, Debug)]
 pub struct ExecutorPublishOptions {
     pub trim_threshold: Option<i64>
 }
