@@ -20,6 +20,10 @@ pub struct Executor {
     redis: Arc<Mutex<Option<Client>>>,
 }
 
+pub struct ExecutorPublishOptions {
+    pub trim_threshold: Option<i64>
+}
+
 impl Executor {
     pub fn get_id(&self) -> String {
         self.env.id.clone()
@@ -144,7 +148,7 @@ impl Executor {
         Some(stream)
     }
 
-    pub async fn publish(&self, message: impl Into<StreamMessage>) {
+    pub async fn publish(&self, message: impl Into<StreamMessage>, options: ExecutorPublishOptions) {
         info!("publishing message to the channels");
 
         let mut stream_msg: StreamMessage = message.into();
@@ -171,7 +175,7 @@ impl Executor {
             let trim_options = XTrimOptions::max_len(
                 XTrimOperator::Approximately,
                 // channel.size as i64,
-                10000
+                options.trim_threshold.unwrap_or(10000)
             );
 
             info!(
