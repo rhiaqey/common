@@ -168,10 +168,11 @@ impl Executor {
             );
 
             let xadd_options = XAddOptions::default();
+            /*
             let trim_options = XTrimOptions::max_len(
                 XTrimOperator::Approximately,
                 channel.size as i64,
-            );
+            );*/
 
             info!(
                 "publishing message channel={}, max_len={}, topic={}, timestamp={:?}",
@@ -191,7 +192,8 @@ impl Executor {
                         topic.clone(),
                         "*",
                         [("raw", data.clone()), ("tag", tag.clone()), ("tms", format!("{}", tms))],
-                        xadd_options.trim_options(trim_options),
+                        // xadd_options.trim_options(trim_options),
+                        XAddOptions::default()
                     )
                     .await
                     .unwrap();
