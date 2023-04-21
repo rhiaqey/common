@@ -107,6 +107,17 @@ impl From<quick_xml::Error> for RhiaqeyError {
     }
 }
 
+#[cfg(feature = "quick-xml")]
+impl From<quick_xml::DeError> for RhiaqeyError {
+    fn from(value: quick_xml::DeError) -> Self {
+        RhiaqeyError{
+            code: None,
+            message: value.to_string(),
+            error: Some(Box::new(value))
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::error::{RhiaqeyError};
