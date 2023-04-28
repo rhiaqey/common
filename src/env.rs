@@ -1,5 +1,5 @@
 use rsa::pkcs8::DecodePrivateKey;
-use rsa::{Oaep, PublicKey, RsaPrivateKey, RsaPublicKey};
+use rsa::{Oaep, RsaPrivateKey, RsaPublicKey};
 use crate::redis::RedisSettings;
 use serde::Deserialize;
 use crate::error::RhiaqeyError;
