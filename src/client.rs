@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use rhiaqey_sdk::channel::Channel;
 use rhiaqey_sdk::message::MessageValue;
 use serde::{Deserialize, Serialize};
@@ -38,11 +39,11 @@ pub struct ClientMessage {
     pub data_type: u8,
 
     // source channel
-    #[serde(rename = "chn", skip_serializing_if = "String::is_empty")]
-    pub channel: String,
+    #[serde(rename = "chn")]
+    pub channel: Cow<'static, str>,
 
-    #[serde(rename = "key", skip_serializing_if = "String::is_empty")]
-    pub key: String,
+    #[serde(rename = "key")]
+    pub key: Cow<'static, str>,
 
     // Any value
     #[serde(rename = "val")]
@@ -68,8 +69,8 @@ impl From<StreamMessage> for ClientMessage {
     fn from(value: StreamMessage) -> Self {
         ClientMessage{
             data_type: ClientMessageDataType::Data as u8,
-            channel: value.channel,
-            key: value.key,
+            channel: value.channel.into(),
+            key: value.key.into(),
             value: ClientMessageValue::Data(value.value),
             tag: value.tag,
             category: value.category,

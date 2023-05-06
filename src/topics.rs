@@ -1,4 +1,6 @@
-pub fn publishers_to_hub_stream_topic(namespace: String, channel: String) -> String {
+use std::borrow::Cow;
+
+pub fn publishers_to_hub_stream_topic(namespace: String, channel: Cow<'static, str>) -> String {
     format!("{}:hub:channels:{}:raw", namespace, channel)
 }
 
@@ -10,7 +12,7 @@ pub fn hub_to_publisher_pubsub_topic(namespace: String, publisher_name: String) 
     format!("{}:publishers:{}:streams:pubsub", namespace, publisher_name)
 }
 
-pub fn hub_channel_snapshot_topic(namespace: String, channel: String, key: String, category: String) -> String {
+pub fn hub_channel_snapshot_topic(namespace: String, channel: Cow<'static, str>, key: String, category: String) -> String {
     format!("{}:hub:channels:{}:snapshot:{}:{}", namespace, channel, key, category)
 }
 
