@@ -1,6 +1,6 @@
 use std::borrow::Cow;
-use rhiaqey_sdk::channel::Channel;
-use rhiaqey_sdk::message::MessageValue;
+use rhiaqey_sdk_rs::channel::Channel;
+use rhiaqey_sdk_rs::message::MessageValue;
 use serde::{Deserialize, Serialize};
 use crate::stream::StreamMessage;
 

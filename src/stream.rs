@@ -1,6 +1,6 @@
-use rhiaqey_sdk::gateway::GatewayMessage;
-use rhiaqey_sdk::message::MessageValue;
-use rhiaqey_sdk::producer::ProducerMessage;
+use rhiaqey_sdk_rs::gateway::GatewayMessage;
+use rhiaqey_sdk_rs::message::MessageValue;
+use rhiaqey_sdk_rs::producer::ProducerMessage;
 use serde::{Deserialize, Serialize};
 use crate::error::RhiaqeyError;
 

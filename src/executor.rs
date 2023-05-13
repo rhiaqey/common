@@ -1,11 +1,11 @@
 use log::{debug, info, trace, warn};
-use rhiaqey_sdk::channel::{Channel, ChannelList};
+use rhiaqey_sdk_rs::channel::{Channel, ChannelList};
 use rustis::client::{Client, PubSubMessage, PubSubStream};
 use rustis::commands::{PubSubCommands, StreamCommands, StringCommands, XAddOptions, XTrimOperator, XTrimOptions};
 use serde::de::DeserializeOwned;
 use std::fmt::Debug;
 use std::sync::Arc;
-use rhiaqey_sdk::message::MessageValue;
+use rhiaqey_sdk_rs::message::MessageValue;
 use tokio::sync::{Mutex, RwLock};
 use crate::env::Env;
 use crate::error::RhiaqeyError;

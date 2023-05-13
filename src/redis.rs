@@ -50,14 +50,10 @@ pub async fn connect(settings: RedisSettings) -> Option<Client> {
 }
 
 pub async fn connect_and_ping(config: RedisSettings) -> Option<Client> {
-    let redis_connection = connect(config).await;
-    if redis_connection.is_none() {
-        return None;
-    }
+    let redis_connection = connect(config).await?;
 
     let result: String = redis_connection
         .clone()
-        .unwrap()
         .ping(PingOptions::default().message("hello"))
         .await
         .unwrap();
@@ -65,7 +61,7 @@ pub async fn connect_and_ping(config: RedisSettings) -> Option<Client> {
         return None;
     }
 
-    redis_connection
+    Some(redis_connection)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
