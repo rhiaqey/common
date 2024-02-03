@@ -1,3 +1,4 @@
+use std::fs;
 use rsa::pkcs8::DecodePrivateKey;
 use rsa::{Oaep, RsaPrivateKey, RsaPublicKey};
 use crate::redis::RedisSettings;
@@ -37,11 +38,9 @@ pub struct Env {
     /// Required
     pub private_key: String,
 
-    /// Required
-    pub public_key: String,
-
+    /// Optional since k8s is not required
     #[serde(flatten)]
-    pub k8s: KubernetesEnv,
+    pub k8s: Option<KubernetesEnv>,
 
     /// The public facing port that is only useful for gateways
     #[serde(default = "default_public_port")]
@@ -60,7 +59,12 @@ impl Env {
         let mut rng = rand::thread_rng();
         let padding = Oaep::new::<sha2::Sha256>();
 
-        let private_key = RsaPrivateKey::from_pkcs8_pem(self.private_key.as_str())
+        // Check if it is a path to a private key by trying to load from filesystem
+        let private_key_content = fs::read_to_string(self.private_key.clone())
+            .unwrap_or(self.private_key.clone());
+        let private_key = private_key_content.as_str();
+
+        let rsa_private_key = RsaPrivateKey::from_pkcs8_pem(private_key)
             .map_err(|x| RhiaqeyError{
                 code: None,
                 message: x.to_string(),
@@ -68,13 +72,14 @@ impl Env {
             }
         )?;
 
-        let public_key = RsaPublicKey::from(&private_key);
-        let enc_data = public_key.encrypt(&mut rng, padding, data.as_slice())
+        let rsa_public_key = RsaPublicKey::from(&rsa_private_key);
+        let enc_data = rsa_public_key.encrypt(&mut rng, padding, data.as_slice())
             .map_err(|x| RhiaqeyError{
                 code: None,
                 message: x.to_string(),
                 error: Some(Box::new(x))
-            })?;
+            }
+        )?;
 
         Ok(enc_data)
     }
@@ -82,7 +87,7 @@ impl Env {
     pub fn decrypt(&self, data: Vec<u8>) -> Result<Vec<u8>, RhiaqeyError> {
         let padding = Oaep::new::<sha2::Sha256>();
 
-        let private_key = RsaPrivateKey::from_pkcs8_pem(self.private_key.as_str())
+        let rsa_private_key = RsaPrivateKey::from_pkcs8_pem(self.private_key.as_str())
             .map_err(|x| RhiaqeyError{
                 code: None,
                 message: x.to_string(),
@@ -90,7 +95,7 @@ impl Env {
             }
         )?;
 
-        let dec_data = private_key.decrypt(padding, data.as_slice())
+        let dec_data = rsa_private_key.decrypt(padding, data.as_slice())
             .map_err(|x| RhiaqeyError{
                 code: None,
                 message: x.to_string(),
