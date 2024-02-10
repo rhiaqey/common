@@ -32,6 +32,10 @@ pub fn publisher_settings_key(namespace: String, publisher_name: String) -> Stri
     format!("{}:publishers:{}:settings", namespace, publisher_name)
 }
 
+pub fn publisher_schema_key(namespace: String, publisher_name: String) -> String {
+    format!("{}:publishers:{}:schema", namespace, publisher_name)
+}
+
 pub fn publisher_channels_snapshot(
     namespace: String,
     publisher_name: String,
