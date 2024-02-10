@@ -149,6 +149,28 @@ impl Executor {
         Some(stream)
     }
 
+    pub async fn rpc(&self, namespace: String, message: RPCMessage) -> Result<usize, RhiaqeyError> {
+        info!("broadcasting rpc message to all hubs");
+
+        let clean_topic = topics::hub_raw_to_hub_clean_pubsub_topic(namespace);
+
+        // Prepare to broadcast to all hubs that we have clean message
+        let raw = message.to_string()?;
+
+        let t = self.redis
+            .lock()
+            .await
+            .clone()
+            .unwrap()
+            .publish(clean_topic.clone(), raw)
+            .await
+            .unwrap();
+
+        trace!("message sent to pubsub {}", clean_topic);
+
+        Ok(t)
+    }
+
     pub async fn publish(&self, message: impl Into<StreamMessage>, options: ExecutorPublishOptions) {
         info!("publishing message to the channels");
 

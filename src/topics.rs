@@ -4,10 +4,6 @@ pub fn publishers_to_hub_stream_topic(namespace: String, channel: Cow<'static, s
     format!("{}:hub:channels:{}:raw", namespace, channel)
 }
 
-pub fn publishers_to_hub_pubsub_topic(namespace: String) -> String {
-    format!("{}:hub:streams:pubsub:clean", namespace)
-}
-
 pub fn hub_raw_to_hub_clean_pubsub_topic(namespace: String) -> String {
     format!("{}:hub:streams:pubsub:clean", namespace)
 }
