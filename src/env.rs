@@ -1,6 +1,8 @@
 use std::fs;
+use log::{debug, trace, warn};
 use rsa::pkcs8::DecodePrivateKey;
 use rsa::{Oaep, RsaPrivateKey, RsaPublicKey};
+use rsa::pkcs1::DecodeRsaPublicKey;
 use crate::redis::RedisSettings;
 use serde::Deserialize;
 use crate::error::RhiaqeyError;
@@ -35,8 +37,11 @@ pub struct Env {
     /// Namespace of the k8s installation
     pub namespace: String,
 
-    /// Required
-    pub private_key: String,
+    /// Optional. If not set no encryption will be applied
+    pub private_key: Option<String>,
+
+    /// Optional. If not set no decryption will be possible
+    pub public_key: Option<String>,
 
     /// Optional since k8s is not required
     #[serde(flatten)]
@@ -56,23 +61,32 @@ pub struct Env {
 
 impl Env {
     pub fn encrypt(&self, data: Vec<u8>) -> Result<Vec<u8>, RhiaqeyError> {
+        if self.public_key.is_none() {
+            trace!("no public key was found");
+            return Ok(data);
+        }
+
+        let public_key_optional = self.public_key.as_ref().unwrap();
+
+        let mut public_key_result = fs::read_to_string(public_key_optional);
+        if let Err(err) = public_key_result {
+            warn!("public key read from path error {err}");
+            debug!("setting public key from env");
+            public_key_result = Ok(public_key_optional.to_string());
+        }
+
+        let public_key = public_key_result?;
+
+        let rsa_public_key = RsaPublicKey::from_pkcs1_pem(&public_key).map_err(|x| RhiaqeyError{
+            code: None,
+            message: x.to_string(),
+            error: Some(Box::new(x))
+        })?;
+
+        trace!("RSA public key is ready");
+
         let mut rng = rand::thread_rng();
         let padding = Oaep::new::<sha2::Sha256>();
-
-        // Check if it is a path to a private key by trying to load from filesystem
-        let private_key_content = fs::read_to_string(self.private_key.clone())
-            .unwrap_or(self.private_key.clone());
-        let private_key = private_key_content.as_str();
-
-        let rsa_private_key = RsaPrivateKey::from_pkcs8_pem(private_key)
-            .map_err(|x| RhiaqeyError{
-                code: None,
-                message: x.to_string(),
-                error: Some(Box::new(x)),
-            }
-        )?;
-
-        let rsa_public_key = RsaPublicKey::from(&rsa_private_key);
         let enc_data = rsa_public_key.encrypt(&mut rng, padding, data.as_slice())
             .map_err(|x| RhiaqeyError{
                 code: None,
@@ -81,13 +95,29 @@ impl Env {
             }
         )?;
 
+        trace!("data encrypted");
+
         Ok(enc_data)
     }
 
     pub fn decrypt(&self, data: Vec<u8>) -> Result<Vec<u8>, RhiaqeyError> {
-        let padding = Oaep::new::<sha2::Sha256>();
+        if self.private_key.is_none() {
+            trace!("no private key was found");
+            return Ok(data);
+        }
 
-        let rsa_private_key = RsaPrivateKey::from_pkcs8_pem(self.private_key.as_str())
+        let private_key_optional = self.private_key.as_ref().unwrap();
+
+        let mut private_key_result = fs::read_to_string(private_key_optional);
+        if let Err(err) = private_key_result {
+            warn!("private key read from path error {err}");
+            debug!("setting private key from env");
+            private_key_result = Ok(private_key_optional.to_string());
+        }
+
+        let private_key = private_key_result?;
+
+        let rsa_private_key = RsaPrivateKey::from_pkcs8_pem(private_key.as_str())
             .map_err(|x| RhiaqeyError{
                 code: None,
                 message: x.to_string(),
@@ -95,6 +125,9 @@ impl Env {
             }
         )?;
 
+        trace!("RSA private key is ready");
+
+        let padding = Oaep::new::<sha2::Sha256>();
         let dec_data = rsa_private_key.decrypt(padding, data.as_slice())
             .map_err(|x| RhiaqeyError{
                 code: None,
@@ -102,6 +135,8 @@ impl Env {
                 error: Some(Box::new(x))
             }
         )?;
+
+        trace!("data decrypted");
 
         Ok(dec_data)
     }
