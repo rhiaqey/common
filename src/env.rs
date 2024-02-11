@@ -1,8 +1,8 @@
 use std::fs;
 use log::{debug, trace, warn};
-use rsa::pkcs8::DecodePrivateKey;
 use rsa::{Oaep, RsaPrivateKey, RsaPublicKey};
 use rsa::pkcs1::DecodeRsaPublicKey;
+use rsa::pkcs1::DecodeRsaPrivateKey;
 use crate::redis::RedisSettings;
 use serde::Deserialize;
 use crate::error::RhiaqeyError;
@@ -117,7 +117,7 @@ impl Env {
 
         let private_key = private_key_result?;
 
-        let rsa_private_key = RsaPrivateKey::from_pkcs8_pem(private_key.as_str())
+        let rsa_private_key = RsaPrivateKey::from_pkcs1_pem(private_key.as_str())
             .map_err(|x| RhiaqeyError{
                 code: None,
                 message: x.to_string(),
