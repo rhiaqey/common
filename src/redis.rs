@@ -1,8 +1,8 @@
-use log::warn;
 use rustis::client::Client;
-use rustis::commands::{ConnectionCommands, PingOptions};
+use rustis::commands::{ConnectionCommands, FlushingMode, PingOptions, ServerCommands};
 use rustis::resp::{deserialize_byte_buf, PrimitiveResponse};
 use serde::{Deserialize, Serialize};
+use crate::error::RhiaqeyError;
 
 fn default_redis_db() -> Option<String> {
     Some("0".to_string())
@@ -23,8 +23,9 @@ pub struct RedisSettings {
     pub redis_sentinel_master: Option<String>,
 }
 
-pub async fn connect(settings: RedisSettings) -> Option<Client> {
+pub async fn connect(settings: RedisSettings) -> Result<Client, RhiaqeyError> {
     let password = settings.redis_password.unwrap();
+
     let connect_uri = match settings.redis_address {
         None => format!(
             "redis+sentinel://:{}@{}/{}?sentinel_password={}",
@@ -40,28 +41,24 @@ pub async fn connect(settings: RedisSettings) -> Option<Client> {
         ),
     };
 
-    let result = Client::connect(connect_uri).await;
-    if let Err(e) = result {
-        warn!("connection error: {}", e);
-        None
-    } else {
-        Some(result.unwrap())
-    }
+    let client = Client::connect(connect_uri).await.map_err(|x| x.to_string())?;
+    client.flushdb(FlushingMode::Sync).await?;
+    Ok(client)
 }
 
-pub async fn connect_and_ping(config: RedisSettings) -> Option<Client> {
+pub async fn connect_and_ping(config: RedisSettings) -> Result<Client, RhiaqeyError> {
     let redis_connection = connect(config).await?;
 
     let result: String = redis_connection
         .clone()
         .ping(PingOptions::default().message("hello"))
-        .await
-        .unwrap();
+        .await?;
+
     if result != "hello" {
-        return None;
+        return Err("ping failed".to_string().into());
     }
 
-    Some(redis_connection)
+    Ok(redis_connection)
 }
 
 #[derive(Debug, Serialize, Deserialize)]

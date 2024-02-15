@@ -1,7 +1,7 @@
-use log::{debug, info, trace, warn};
+use log::{debug, info, trace};
 use rhiaqey_sdk_rs::channel::{Channel, ChannelList};
 use rustis::client::{Client, PubSubMessage, PubSubStream};
-use rustis::commands::{PubSubCommands, StreamCommands, StringCommands, XAddOptions, XTrimOperator, XTrimOptions};
+use rustis::commands::{FlushingMode, PubSubCommands, ServerCommands, StreamCommands, StringCommands, XAddOptions, XTrimOperator, XTrimOptions};
 use serde::de::DeserializeOwned;
 use std::fmt::Debug;
 use std::sync::Arc;
@@ -103,16 +103,15 @@ impl Executor {
         Ok(settings)
     }
 
-    pub async fn setup(config: Env) -> Result<Executor, String> {
-        let redis_connection = connect_and_ping(config.redis.clone()).await;
-        if redis_connection.is_none() {
-            return Err("failed to connect to redis".to_string());
-        }
+    pub async fn setup(config: Env) -> Result<Executor, RhiaqeyError> {
+        let client = connect_and_ping(config.redis.clone()).await?;
+
+        client.flushdb(FlushingMode::Sync).await?;
 
         let mut executor = Executor {
             env: Arc::from(config),
             channels: Arc::from(RwLock::new(vec![])),
-            redis: Arc::new(Mutex::new(redis_connection)),
+            redis: Arc::new(Mutex::new(Some(client))),
         };
 
         let channels = executor.read_channels().await;
@@ -132,21 +131,17 @@ impl Executor {
         }
     }
 
-    pub async fn create_hub_to_publishers_pubsub(&mut self) -> Option<PubSubStream> {
-        let client = connect_and_ping(self.env.redis.clone()).await;
-        if client.is_none() {
-            warn!("failed to connect with ping");
-            return None;
-        }
+    pub async fn create_hub_to_publishers_pubsub(&mut self) -> Result<PubSubStream, RhiaqeyError> {
+        let client = connect_and_ping(self.env.redis.clone()).await?;
 
         let key = topics::hub_to_publisher_pubsub_topic(
             self.env.namespace.clone(),
             self.env.name.clone(),
         );
 
-        let stream = client.unwrap().subscribe(key.clone()).await.unwrap();
+        let stream = client.subscribe(key.clone()).await?;
 
-        Some(stream)
+        Ok(stream)
     }
 
     pub async fn rpc(&self, namespace: String, message: RPCMessage) -> Result<usize, RhiaqeyError> {
