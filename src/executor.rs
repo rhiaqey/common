@@ -1,7 +1,7 @@
 use log::{debug, info, trace};
 use rhiaqey_sdk_rs::channel::{Channel, ChannelList};
 use rustis::client::{Client, PubSubMessage, PubSubStream};
-use rustis::commands::{FlushingMode, PubSubCommands, ServerCommands, StreamCommands, StringCommands, XAddOptions, XTrimOperator, XTrimOptions};
+use rustis::commands::{PubSubCommands, StreamCommands, StringCommands, XAddOptions, XTrimOperator, XTrimOptions};
 use serde::de::DeserializeOwned;
 use std::fmt::Debug;
 use std::sync::Arc;
@@ -105,8 +105,6 @@ impl Executor {
 
     pub async fn setup(config: Env) -> Result<Executor, RhiaqeyError> {
         let client = connect_and_ping(config.redis.clone()).await?;
-
-        client.flushdb(FlushingMode::Sync).await?;
 
         let mut executor = Executor {
             env: Arc::from(config),

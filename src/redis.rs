@@ -1,5 +1,5 @@
 use rustis::client::Client;
-use rustis::commands::{ConnectionCommands, FlushingMode, PingOptions, ServerCommands};
+use rustis::commands::{ConnectionCommands, PingOptions};
 use rustis::resp::{deserialize_byte_buf, PrimitiveResponse};
 use serde::{Deserialize, Serialize};
 use crate::error::RhiaqeyError;
@@ -42,7 +42,6 @@ pub async fn connect(settings: RedisSettings) -> Result<Client, RhiaqeyError> {
     };
 
     let client = Client::connect(connect_uri).await.map_err(|x| x.to_string())?;
-    client.flushdb(FlushingMode::Sync).await?;
     Ok(client)
 }
 
