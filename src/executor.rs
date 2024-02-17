@@ -207,7 +207,7 @@ impl Executor {
 
             let topic = topics::publishers_to_hub_stream_topic(
                 self.env.namespace.clone(),
-                channel.name.clone(),
+                channel.name.to_string(),
             );
 
             let xadd_options = XAddOptions::default();

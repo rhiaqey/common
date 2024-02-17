@@ -1,51 +1,59 @@
-use std::borrow::Cow;
-
-pub fn publishers_to_hub_stream_topic(namespace: String, channel: Cow<'static, str>) -> String {
-    format!("{}:hub:channels:{}:raw", namespace, channel)
+pub fn publishers_to_hub_stream_topic<S: AsRef<str>>(namespace: S, channel: S) -> String {
+    format!("{}:hub:channels:{}:raw", namespace.as_ref(), channel.as_ref())
 }
 
-pub fn hub_raw_to_hub_clean_pubsub_topic(namespace: String) -> String {
-    format!("{}:hub:streams:pubsub:clean", namespace)
+pub fn hub_raw_to_hub_clean_pubsub_topic<S: AsRef<str>>(namespace: S) -> String {
+    format!("{}:hub:streams:pubsub:clean", namespace.as_ref())
 }
 
-pub fn hub_to_publisher_pubsub_topic(namespace: String, publisher_name: String) -> String {
-    format!("{}:publishers:{}:streams:pubsub", namespace, publisher_name)
+pub fn hub_to_publisher_pubsub_topic<S: AsRef<str>>(namespace: S, publisher_name: S) -> String {
+    format!("{}:publishers:{}:streams:pubsub", namespace.as_ref(), publisher_name.as_ref())
 }
 
-pub fn hub_channel_snapshot_topic(namespace: String, channel: Cow<'static, str>, key: String, category: String) -> String {
-    format!("{}:hub:channels:{}:snapshot:{}:{}", namespace, channel, key, category)
+pub fn hub_channel_snapshot_topic<S: AsRef<str>>(namespace: S, channel: S, key: S, category: S) -> String {
+    format!(
+        "{}:hub:channels:{}:snapshot:{}:{}",
+        namespace.as_ref(),
+        channel.as_ref(),
+        key.as_ref(),
+        category.as_ref()
+    )
 }
 
-pub fn hub_channels_key(namespace: String) -> String {
-    format!("{}:hub:channels", namespace)
+pub fn hub_channels_key<S: AsRef<str>>(namespace: S) -> String {
+    format!("{}:hub:channels", namespace.as_ref())
 }
 
-pub fn publisher_channels_key(namespace: String, publisher_name: String) -> String {
-    format!("{}:publishers:{}:channels", namespace, publisher_name)
+pub fn publisher_channels_key<S: AsRef<str>>(namespace: S, publisher_name: S) -> String {
+    format!("{}:publishers:{}:channels", namespace.as_ref(), publisher_name.as_ref())
 }
 
-pub fn hub_settings_key(namespace: String) -> String {
-    format!("{}:hub:settings", namespace)
+pub fn hub_settings_key<S: AsRef<str>>(namespace: S) -> String {
+    format!("{}:hub:settings", namespace.as_ref())
 }
 
-pub fn publisher_settings_key(namespace: String, publisher_name: String) -> String {
-    format!("{}:publishers:{}:settings", namespace, publisher_name)
+pub fn publisher_settings_key<S: AsRef<str>>(namespace: S, publisher_name: S) -> String {
+    format!("{}:publishers:{}:settings", namespace.as_ref(), publisher_name.as_ref())
 }
 
-pub fn publisher_schema_key(namespace: String, publisher_name: String) -> String {
-    format!("{}:publishers:{}:schema", namespace, publisher_name)
+pub fn publisher_schema_key<S: AsRef<str>>(namespace: S, publisher_name: S) -> String {
+    format!("{}:publishers:{}:schema", namespace.as_ref(), publisher_name.as_ref())
 }
 
-pub fn publisher_channels_snapshot(
-    namespace: String,
-    publisher_name: String,
-    key: String,
-    category: String,
+pub fn security_key<S: AsRef<str>>(namespace: S) -> String {
+    format!("{}:security", namespace.as_ref())
+}
+
+pub fn publisher_channels_snapshot<S: AsRef<str>>(
+    namespace: S,
+    publisher_name: S,
+    key: S,
+    category: S,
 ) -> String {
     format!(
         "{}:keys:{}:{}",
         publisher_channels_key(namespace, publisher_name),
-        key,
-        category
+        key.as_ref(),
+        category.as_ref()
     )
 }

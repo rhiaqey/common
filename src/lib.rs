@@ -6,3 +6,4 @@ pub mod stream;
 pub mod topics;
 pub mod executor;
 pub mod error;
+pub mod security;
