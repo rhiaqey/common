@@ -12,6 +12,7 @@ use crate::env::Env;
 use crate::error::RhiaqeyError;
 use crate::pubsub::RPCMessage;
 use crate::redis::{connect_and_ping, RhiaqeyBufVec};
+use crate::security::SecurityKey;
 use crate::stream::{StreamMessage};
 use crate::topics;
 
@@ -61,6 +62,22 @@ impl Executor {
 
     pub async fn get_channel_count(&self) -> usize {
         self.channels.read().await.len()
+    }
+
+    pub async fn load_key(config: &Env, client: &Client) -> Result<SecurityKey, RhiaqeyError> {
+        let namespace = config.namespace.clone();
+        let security_key = topics::security_key(namespace);
+        let security_str: String = client.get(security_key.clone()).await?;
+
+        let mut security = serde_json::from_str::<SecurityKey>(security_str.as_str())
+            .map_err(|err| RhiaqeyError::from(err.to_string()))?;
+
+        security.key = config.decrypt(security.key)?;
+        security.no_once = config.decrypt(security.no_once)?;
+
+        debug!("security keys loaded");
+
+        Ok(security)
     }
 
     pub async fn read_channels(&self) -> Result<Vec<Channel>, RhiaqeyError> {
