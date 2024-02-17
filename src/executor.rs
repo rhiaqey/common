@@ -97,7 +97,7 @@ impl Executor {
         trace!("got channels {}", all_channels_result);
 
         let all_channels: ChannelList =
-            serde_json::from_str(all_channels_result.as_str())?;
+            serde_json::from_str(all_channels_result.as_str()).unwrap_or(ChannelList::default());
         trace!("got all channels result {:?}", all_channels);
 
         let publisher_channels_key =
@@ -107,7 +107,8 @@ impl Executor {
         trace!("got publisher channels {}", publisher_channels_result);
 
         let all_publisher_channels: PublisherChannel =
-            serde_json::from_str(publisher_channels_result.as_str())?;
+            serde_json::from_str(publisher_channels_result.as_str())
+                .unwrap_or(PublisherChannel{ name: self.get_name(), channels: vec![]});
         trace!("got all publisher channels result {:?}", all_publisher_channels);
 
         let channels = all_channels.channels.iter()
