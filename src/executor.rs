@@ -18,8 +18,8 @@ use crate::{security, topics};
 
 pub struct Executor {
     env: Arc<Env>,
+    redis: Arc<Mutex<Client>>,
     channels: Arc<RwLock<Vec<Channel>>>,
-    redis: Arc<Mutex<Option<Client>>>,
     security: Arc<Mutex<SecurityKey>>,
 }
 
@@ -88,9 +88,7 @@ impl Executor {
         let all_channels_key = topics::hub_channels_key(self.get_namespace());
         trace!("all channels key {}", all_channels_key);
 
-        let mut lock = self.redis.lock().await;
-        let client = lock.as_mut()
-            .ok_or(RhiaqeyError::from("redis client is not available"))?;
+        let client = self.redis.lock().await;
 
         // get all channels in the system
         let all_channels_result: String = client.get(all_channels_key).await?;
@@ -117,8 +115,6 @@ impl Executor {
             .collect::<Vec<_>>();
         debug!("found {} channel(s) for publisher", channels.len());
 
-        drop(lock);
-
         Ok(channels)
     }
 
@@ -130,8 +126,6 @@ impl Executor {
             .redis
             .lock()
             .await
-            .as_mut()
-            .unwrap()
             .get(settings_key)
             .await?;
         debug!("encrypted settings retrieved");
@@ -157,7 +151,7 @@ impl Executor {
         let mut executor = Executor {
             env: Arc::from(config),
             channels: Arc::from(RwLock::new(vec![])),
-            redis: Arc::new(Mutex::new(Some(client))),
+            redis: Arc::new(Mutex::new(client)),
             security: Arc::new(Mutex::new(security)),
         };
 
@@ -203,7 +197,6 @@ impl Executor {
             .lock()
             .await
             .clone()
-            .unwrap()
             .publish(clean_topic.clone(), raw)
             .await
             .unwrap();
@@ -255,8 +248,6 @@ impl Executor {
                     .redis
                     .lock()
                     .await
-                    .as_mut()
-                    .unwrap()
                     .xadd(
                         topic.clone(),
                         "*",
