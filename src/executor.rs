@@ -14,12 +14,13 @@ use crate::pubsub::RPCMessage;
 use crate::redis::{connect_and_ping, RhiaqeyBufVec};
 use crate::security::SecurityKey;
 use crate::stream::{StreamMessage};
-use crate::topics;
+use crate::{security, topics};
 
 pub struct Executor {
     env: Arc<Env>,
     channels: Arc<RwLock<Vec<Channel>>>,
     redis: Arc<Mutex<Option<Client>>>,
+    security: Arc<Mutex<SecurityKey>>,
 }
 
 #[derive(Default, Clone, Debug)]
@@ -134,8 +135,13 @@ impl Executor {
             .await?;
         debug!("encrypted settings retrieved");
 
-        let data = self.env.decrypt(result.0)?;
-        debug!("raw data decrypted");
+        let keys = self.security.lock().await;
+
+        let data = security::aes_decrypt(
+            keys.no_once.as_slice(),
+            keys.key.as_slice(),
+            result.0.as_slice(),
+        )?;
 
         let settings = MessageValue::Binary(data).decode::<T>()?;
         debug!("decrypted data decoded into settings");
@@ -145,11 +151,13 @@ impl Executor {
 
     pub async fn setup(config: Env) -> Result<Executor, RhiaqeyError> {
         let client = connect_and_ping(config.redis.clone()).await?;
+        let security = Self::load_key(&config, &client).await?;
 
         let mut executor = Executor {
             env: Arc::from(config),
             channels: Arc::from(RwLock::new(vec![])),
             redis: Arc::new(Mutex::new(Some(client))),
+            security: Arc::new(Mutex::new(security)),
         };
 
         let channels = executor.read_channels().await?;
