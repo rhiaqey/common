@@ -66,34 +66,28 @@ impl Env {
             return Ok(data);
         }
 
-        let public_key_optional = self.public_key.as_ref().unwrap();
+        let public_key_optional = self.public_key
+            .as_ref()
+            .ok_or(RhiaqeyError::from("failed to obtain public key"))?;
 
         let mut public_key_result = fs::read_to_string(public_key_optional);
         if let Err(err) = public_key_result {
             warn!("public key read from path error {err}");
             debug!("setting public key from env");
-            public_key_result = Ok(public_key_optional.to_string());
+            public_key_result = Ok(public_key_optional.clone());
         }
 
         let public_key = public_key_result?;
 
-        let rsa_public_key = RsaPublicKey::from_pkcs1_pem(&public_key).map_err(|x| RhiaqeyError{
-            code: None,
-            message: x.to_string(),
-            error: Some(Box::new(x))
-        })?;
+        let rsa_public_key = RsaPublicKey::from_pkcs1_pem(&public_key)
+            .map_err(|x| RhiaqeyError::from(x.to_string()))?;
 
         trace!("RSA public key is ready");
 
         let mut rng = rand::thread_rng();
         let padding = Oaep::new::<sha2::Sha256>();
         let enc_data = rsa_public_key.encrypt(&mut rng, padding, data.as_slice())
-            .map_err(|x| RhiaqeyError{
-                code: None,
-                message: x.to_string(),
-                error: Some(Box::new(x))
-            }
-        )?;
+            .map_err(|x| RhiaqeyError::from(x.to_string()))?;
 
         trace!("data encrypted");
 
@@ -106,7 +100,9 @@ impl Env {
             return Ok(data);
         }
 
-        let private_key_optional = self.private_key.as_ref().unwrap();
+        let private_key_optional = self.private_key
+            .as_ref()
+            .ok_or(RhiaqeyError::from("failed to obtain private_key key"))?;
 
         let mut private_key_result = fs::read_to_string(private_key_optional);
         if let Err(err) = private_key_result {
@@ -117,24 +113,14 @@ impl Env {
 
         let private_key = private_key_result?;
 
-        let rsa_private_key = RsaPrivateKey::from_pkcs1_pem(private_key.as_str())
-            .map_err(|x| RhiaqeyError{
-                code: None,
-                message: x.to_string(),
-                error: Some(Box::new(x)),
-            }
-        )?;
+        let rsa_private_key = RsaPrivateKey::from_pkcs1_pem(&private_key)
+            .map_err(|x| RhiaqeyError::from(x.to_string()))?;
 
         trace!("RSA private key is ready");
 
         let padding = Oaep::new::<sha2::Sha256>();
         let dec_data = rsa_private_key.decrypt(padding, data.as_slice())
-            .map_err(|x| RhiaqeyError{
-                code: None,
-                message: x.to_string(),
-                error: Some(Box::new(x))
-            }
-        )?;
+            .map_err(|x| RhiaqeyError::from(x.to_string()))?;
 
         trace!("data decrypted");
 
