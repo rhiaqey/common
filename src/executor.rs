@@ -6,6 +6,7 @@ use serde::de::DeserializeOwned;
 use std::fmt::Debug;
 use std::sync::Arc;
 use rhiaqey_sdk_rs::message::MessageValue;
+use serde::{Deserialize, Serialize};
 use tokio::sync::{Mutex, RwLock};
 use crate::env::Env;
 use crate::error::RhiaqeyError;
@@ -23,6 +24,13 @@ pub struct Executor {
 #[derive(Default, Clone, Debug)]
 pub struct ExecutorPublishOptions {
     pub trim_threshold: Option<i64>
+}
+
+#[derive(Serialize, Deserialize, Default, Clone, Debug)]
+#[serde(rename_all = "PascalCase")]
+struct PublisherChannel {
+    pub name: String,
+    pub channels: Vec<String>,
 }
 
 impl Executor {
@@ -55,29 +63,44 @@ impl Executor {
         self.channels.read().await.len()
     }
 
-    pub async fn read_channels(&self) -> Vec<Channel> {
-        let channels_key =
-            topics::publisher_channels_key(self.env.namespace.clone(), self.env.name.clone());
+    pub async fn read_channels(&self) -> Result<Vec<Channel>, RhiaqeyError> {
+        debug!("reading all assigned channels");
 
-        let result: String = self
-            .redis
-            .lock()
-            .await
-            .as_mut()
-            .unwrap()
-            .get(channels_key.clone())
-            .await
-            .unwrap();
+        // calculate channels key
+        let all_channels_key = topics::hub_channels_key(self.get_namespace());
+        trace!("all channels key {}", all_channels_key);
 
-        let channel_list: ChannelList =
-            serde_json::from_str(result.as_str()).unwrap_or(ChannelList::default());
+        let mut lock = self.redis.lock().await;
+        let client = lock.as_mut()
+            .ok_or(RhiaqeyError::from("redis client is not available"))?;
 
-        debug!(
-            "channels from {} retrieved {:?}",
-            channels_key, channel_list
-        );
+        // get all channels in the system
+        let all_channels_result: String = client.get(all_channels_key).await?;
+        trace!("got channels {}", all_channels_result);
 
-        channel_list.channels
+        let all_channels: ChannelList =
+            serde_json::from_str(all_channels_result.as_str())?;
+        trace!("got all channels result {:?}", all_channels);
+
+        let publisher_channels_key =
+            topics::publisher_channels_key(self.get_namespace(), self.env.name.clone());
+
+        let publisher_channels_result: String = client.get(publisher_channels_key).await?;
+        trace!("got publisher channels {}", publisher_channels_result);
+
+        let all_publisher_channels: PublisherChannel =
+            serde_json::from_str(publisher_channels_result.as_str())?;
+        trace!("got all publisher channels result {:?}", all_publisher_channels);
+
+        let channels = all_channels.channels.iter()
+            .filter(|x| all_publisher_channels.channels.iter()
+                .any(|y| x.name.eq(y))).cloned()
+            .collect::<Vec<_>>();
+        debug!("found {} channel(s) for publisher", channels.len());
+
+        drop(lock);
+
+        Ok(channels)
     }
 
     pub async fn read_settings<T: DeserializeOwned + Default + Debug>(&self) -> Result<T, RhiaqeyError> {
@@ -112,7 +135,7 @@ impl Executor {
             redis: Arc::new(Mutex::new(Some(client))),
         };
 
-        let channels = executor.read_channels().await;
+        let channels = executor.read_channels().await?;
         executor.set_channels(channels).await;
 
         Ok(executor)

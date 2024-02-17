@@ -32,6 +32,12 @@ impl RhiaqeyError {
     }
 }
 
+impl From<&str> for RhiaqeyError {
+    fn from(message: &str) -> Self {
+        RhiaqeyError { code: None, message: message.into(), error: None }
+    }
+}
+
 impl From<String> for RhiaqeyError {
     fn from(message: String) -> Self {
         RhiaqeyError { code: None, message, error: None }
