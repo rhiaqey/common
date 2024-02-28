@@ -1,5 +1,7 @@
 use std::fmt::{Debug, Display};
 
+use serde::{ser::SerializeStruct, Serialize, Serializer};
+
 #[derive(Debug)]
 pub enum RhiaqeyError {
     Other(String),
@@ -24,7 +26,7 @@ impl Display for RhiaqeyError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             RhiaqeyError::Other(err) => write!(f, "{}", err),
-            RhiaqeyError::IO(err) =>write!(f, "{}", err),
+            RhiaqeyError::IO(err) => write!(f, "{}", err),
             RhiaqeyError::Redis(err) => write!(f, "{}", err),
             RhiaqeyError::Serde(err) => write!(f, "{}", err),
             #[cfg(feature = "rss")]
@@ -36,6 +38,38 @@ impl Display for RhiaqeyError {
             #[cfg(feature = "quick-xml")]
             RhiaqeyError::QuickXMLDeserialization(err) => write!(f, "{}", err),
         }
+    }
+}
+
+impl RhiaqeyError {
+    pub fn kind(&self) -> &str {
+        match self {
+            RhiaqeyError::Other(_) => "other",
+            RhiaqeyError::IO(_) => "io",
+            RhiaqeyError::Redis(_) => "redis",
+            RhiaqeyError::Serde(_) => "serde",
+            #[cfg(feature = "rss")]
+            RhiaqeyError::RSS(_) => "rss",
+            #[cfg(feature = "reqwest")]
+            RhiaqeyError::Reqwest(_) => "http-request",
+            #[cfg(feature = "quick-xml")]
+            RhiaqeyError::QuickXML(_) => "xml",
+            #[cfg(feature = "quick-xml")]
+            RhiaqeyError::QuickXMLDeserialization(_) => "xml-deserialization",
+        }
+    }
+}
+
+impl Serialize for RhiaqeyError {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        // 3 is the number of fields in the struct.
+        let mut state = serializer.serialize_struct("RhiaqeyError", 2)?;
+        state.serialize_field("kind", &self.kind())?;
+        state.serialize_field("message", &self.to_string())?;
+        state.end()
     }
 }
 
