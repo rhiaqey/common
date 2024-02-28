@@ -64,11 +64,11 @@ pub struct StreamMessage {
 }
 
 impl StreamMessage {
-    pub fn serialize(&self) -> Result<String, RhiaqeyError> {
+    pub fn ser_to_string(&self) -> Result<String, RhiaqeyError> {
         serde_json::to_string(self).map_err(|x| x.into())
     }
 
-    pub fn deserialize(message: &str) -> Result<StreamMessage, RhiaqeyError> {
+    pub fn der_from_string(message: &str) -> Result<StreamMessage, RhiaqeyError> {
         serde_json::from_str::<StreamMessage>(message).map_err(|x| x.into())
     }
 }

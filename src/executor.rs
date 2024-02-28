@@ -191,7 +191,7 @@ impl Executor {
         let clean_topic = topics::hub_raw_to_hub_clean_pubsub_topic(namespace);
 
         // Prepare to broadcast to all hubs that we have clean message
-        let raw = message.serialize()?;
+        let raw = message.ser_to_string()?;
 
         let t = self.redis
             .lock()
@@ -246,7 +246,7 @@ impl Executor {
                 options.trim_threshold.unwrap_or(10000)
             ));
 
-            let data = stream_msg.serialize()?;
+            let data = stream_msg.ser_to_string()?;
 
             let id: String = redis.xadd(
                 topic.clone(),
