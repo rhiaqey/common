@@ -13,7 +13,7 @@ use crate::error::RhiaqeyError;
 use crate::pubsub::RPCMessage;
 use crate::redis::{connect_and_ping, RhiaqeyBufVec};
 use crate::security::SecurityKey;
-use crate::stream::{StreamMessage};
+use crate::stream::StreamMessage;
 use crate::{security, topics};
 
 pub struct Executor {
@@ -191,22 +191,21 @@ impl Executor {
         let clean_topic = topics::hub_raw_to_hub_clean_pubsub_topic(namespace);
 
         // Prepare to broadcast to all hubs that we have clean message
-        let raw = message.to_string()?;
+        let raw = message.serialize()?;
 
         let t = self.redis
             .lock()
             .await
             .clone()
             .publish(clean_topic.clone(), raw)
-            .await
-            .unwrap();
+            .await?;
 
         trace!("message sent to pubsub {}", clean_topic);
 
         Ok(t)
     }
 
-    pub async fn publish(&self, message: impl Into<StreamMessage>, options: ExecutorPublishOptions) {
+    pub async fn publish(&self, message: impl Into<StreamMessage>, options: ExecutorPublishOptions) -> Result<usize, RhiaqeyError> {
         info!("publishing message to the channels");
 
         let mut stream_msg: StreamMessage = message.into();
@@ -217,7 +216,12 @@ impl Executor {
 
         let tag = stream_msg.tag.clone().unwrap_or(String::from(""));
 
-        for channel in self.channels.read().await.iter() {
+        let redis = self.redis.lock().await;
+        let channels = self.channels.read().await;
+
+        let channel_size = channels.len();
+
+        for channel in channels.iter() {
             stream_msg.channel = channel.name.to_string();
 
             if stream_msg.size.is_none() {
@@ -229,13 +233,6 @@ impl Executor {
                 channel.name.to_string(),
             );
 
-            let xadd_options = XAddOptions::default();
-            let trim_options = XTrimOptions::max_len(
-                XTrimOperator::Approximately,
-                // channel.size as i64,
-                options.trim_threshold.unwrap_or(10000)
-            );
-
             info!(
                 "publishing message channel={}, max_len={}, topic={}, timestamp={:?}",
                 channel.name, channel.size, topic, stream_msg.timestamp,
@@ -243,25 +240,29 @@ impl Executor {
 
             let tms = stream_msg.timestamp.unwrap_or(0);
 
-            if let Ok(data) = serde_json::to_string(&stream_msg) {
-                let id: String = self
-                    .redis
-                    .lock()
-                    .await
-                    .xadd(
-                        topic.clone(),
-                        "*",
-                        [("raw", data.clone()), ("tag", tag.clone()), ("tms", format!("{}", tms))],
-                        xadd_options.trim_options(trim_options),
-                        // XAddOptions::default()
-                    )
-                    .await
-                    .unwrap();
-                debug!(
-                    "sent message {} to channel {} in topic {}",
-                    id, channel.name, topic
-                );
-            }
+            let xadd_options = XAddOptions::default().trim_options(XTrimOptions::max_len(
+                XTrimOperator::Approximately,
+                // channel.size as i64,
+                options.trim_threshold.unwrap_or(10000)
+            ));
+
+            let data = stream_msg.serialize()?;
+
+            let id: String = redis.xadd(
+                topic.clone(),
+                "*",
+                [("raw", data.clone()), ("tag", tag.clone()), ("tms", format!("{}", tms))],
+                xadd_options,
+                // XAddOptions::default()
+            )
+            .await?;
+
+            debug!(
+                "sent message {} to channel {} in topic {}",
+                id, channel.name, topic
+            );
         }
+
+        Ok(channel_size)
     }
 }
