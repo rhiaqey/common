@@ -38,13 +38,11 @@ pub struct RPCMessage {
 }
 
 impl RPCMessage {
-    pub fn to_string(&self) -> Result<String, RhiaqeyError> {
-        serde_json::to_string(self).map_err(|e|
-            RhiaqeyError{ code: None, message: e.to_string(), error: Some(Box::new(e)) })
+    pub fn ser_to_string(&self) -> Result<String, RhiaqeyError> {
+        serde_json::to_string(self).map_err(|x| x.into())
     }
 
-    pub fn from_string(message: &str) -> Result<RPCMessage, RhiaqeyError> {
-        serde_json::from_str::<RPCMessage>(message).map_err(|e|
-            RhiaqeyError{ code: None, message: e.to_string(), error: Some(Box::new(e)) })
+    pub fn der_from_string(message: &str) -> Result<RPCMessage, RhiaqeyError> {
+        serde_json::from_str::<RPCMessage>(message).map_err(|x| x.into())
     }
 }
