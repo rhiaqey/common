@@ -7,6 +7,7 @@ pub enum RhiaqeyError {
     Other(String),
     IO(std::io::Error),
     Redis(rustis::Error),
+    RedisRs(redis::RedisError),
     Serde(serde_json::Error),
 
     #[cfg(feature = "rss")]
@@ -28,6 +29,7 @@ impl Display for RhiaqeyError {
             RhiaqeyError::Other(err) => write!(f, "{}", err),
             RhiaqeyError::IO(err) => write!(f, "{}", err),
             RhiaqeyError::Redis(err) => write!(f, "{}", err),
+            RhiaqeyError::RedisRs(err) => write!(f, "{}", err),
             RhiaqeyError::Serde(err) => write!(f, "{}", err),
             #[cfg(feature = "rss")]
             RhiaqeyError::RSS(err) => write!(f, "{}", err),
@@ -47,6 +49,7 @@ impl RhiaqeyError {
             RhiaqeyError::Other(_) => "other",
             RhiaqeyError::IO(_) => "io",
             RhiaqeyError::Redis(_) => "redis",
+            RhiaqeyError::RedisRs(_) => "redis",
             RhiaqeyError::Serde(_) => "serde",
             #[cfg(feature = "rss")]
             RhiaqeyError::RSS(_) => "rss",
@@ -94,6 +97,12 @@ impl From<std::io::Error> for RhiaqeyError {
 impl From<rustis::Error> for RhiaqeyError {
     fn from(value: rustis::Error) -> Self {
         RhiaqeyError::Redis(value)
+    }
+}
+
+impl From<redis::RedisError> for RhiaqeyError {
+    fn from(value: redis::RedisError) -> Self {
+        RhiaqeyError::RedisRs(value)
     }
 }
 

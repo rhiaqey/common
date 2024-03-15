@@ -23,7 +23,7 @@ pub struct RedisSettings {
     pub redis_sentinel_master: Option<String>,
 }
 
-pub async fn connect(settings: RedisSettings) -> Result<Client, RhiaqeyError> {
+pub async fn connect_async(settings: RedisSettings) -> Result<Client, RhiaqeyError> {
     let password = settings.redis_password.unwrap();
 
     let connect_uri = match settings.redis_address {
@@ -45,8 +45,8 @@ pub async fn connect(settings: RedisSettings) -> Result<Client, RhiaqeyError> {
     Ok(client)
 }
 
-pub async fn connect_and_ping(config: RedisSettings) -> Result<Client, RhiaqeyError> {
-    let redis_connection = connect(config).await?;
+pub async fn connect_and_ping_async(config: RedisSettings) -> Result<Client, RhiaqeyError> {
+    let redis_connection = connect_async(config).await?;
 
     let result: String = redis_connection
         .clone()

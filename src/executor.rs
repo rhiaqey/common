@@ -11,7 +11,7 @@ use tokio::sync::{Mutex, RwLock};
 use crate::env::Env;
 use crate::error::RhiaqeyError;
 use crate::pubsub::RPCMessage;
-use crate::redis::{connect_and_ping, RhiaqeyBufVec};
+use crate::redis::{connect_and_ping_async, RhiaqeyBufVec};
 use crate::security::SecurityKey;
 use crate::stream::StreamMessage;
 use crate::{security, topics};
@@ -145,7 +145,7 @@ impl Executor {
     }
 
     pub async fn setup(config: Env) -> Result<Executor, RhiaqeyError> {
-        let client = connect_and_ping(config.redis.clone()).await?;
+        let client = connect_and_ping_async(config.redis.clone()).await?;
         let security = Self::load_key(&config, &client).await?;
 
         let mut executor = Executor {
@@ -173,7 +173,7 @@ impl Executor {
     }
 
     pub async fn create_hub_to_publishers_pubsub(&mut self) -> Result<PubSubStream, RhiaqeyError> {
-        let client = connect_and_ping(self.env.redis.clone()).await?;
+        let client = connect_and_ping_async(self.env.redis.clone()).await?;
 
         let key = topics::hub_to_publisher_pubsub_topic(
             self.env.namespace.clone(),
