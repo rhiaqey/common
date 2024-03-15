@@ -25,6 +25,10 @@ pub fn connect(settings: RedisSettings) -> Result<redis::Connection, RhiaqeyErro
 
 pub fn connect_and_ping(settings: RedisSettings) -> Result<redis::Connection, RhiaqeyError> {
     let mut connection = connect(settings)?;
-    let _: () = redis::cmd("PING").query(&mut connection)?;
+    let result: String = redis::cmd("PING").query(&mut connection)?;
+    if result != "PONG" {
+        return Err("ping failed".into());
+    }
+
     Ok(connection)
 }
