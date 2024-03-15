@@ -1,6 +1,6 @@
 use crate::{error::RhiaqeyError, redis::RedisSettings};
 
-pub fn connect(settings: RedisSettings) -> Result<redis::Connection, RhiaqeyError> {
+pub fn connect(settings: RedisSettings) -> Result<redis::Client, RhiaqeyError> {
     let password = settings.redis_password.unwrap();
 
     let connect_uri = match settings.redis_address {
@@ -19,16 +19,16 @@ pub fn connect(settings: RedisSettings) -> Result<redis::Connection, RhiaqeyErro
     };
 
     let client = redis::Client::open(connect_uri)?;
-    let connection = client.get_connection()?;
-    Ok(connection)
+    Ok(client)
 }
 
-pub fn connect_and_ping(settings: RedisSettings) -> Result<redis::Connection, RhiaqeyError> {
-    let mut connection = connect(settings)?;
+pub fn connect_and_ping(settings: RedisSettings) -> Result<redis::Client, RhiaqeyError> {
+    let client = connect(settings)?;
+    let mut connection = client.get_connection()?;
     let result: String = redis::cmd("PING").query(&mut connection)?;
     if result != "PONG" {
         return Err("ping failed".into());
     }
 
-    Ok(connection)
+    Ok(client)
 }
