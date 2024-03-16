@@ -1,4 +1,5 @@
 use std::fmt::{Debug, Display};
+use std::str::Utf8Error;
 
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 
@@ -9,6 +10,7 @@ pub enum RhiaqeyError {
     Redis(rustis::Error),
     RedisRs(redis::RedisError),
     Serde(serde_json::Error),
+    UTF8Error(Utf8Error),
 
     #[cfg(feature = "rss")]
     RSS(rss::Error),
@@ -31,6 +33,7 @@ impl Display for RhiaqeyError {
             RhiaqeyError::Redis(err) => write!(f, "{}", err),
             RhiaqeyError::RedisRs(err) => write!(f, "{}", err),
             RhiaqeyError::Serde(err) => write!(f, "{}", err),
+            RhiaqeyError::UTF8Error(err) => write!(f, "{}", err),
             #[cfg(feature = "rss")]
             RhiaqeyError::RSS(err) => write!(f, "{}", err),
             #[cfg(feature = "reqwest")]
@@ -51,6 +54,7 @@ impl RhiaqeyError {
             RhiaqeyError::Redis(_) => "redis",
             RhiaqeyError::RedisRs(_) => "redis",
             RhiaqeyError::Serde(_) => "serde",
+            RhiaqeyError::UTF8Error(_) => "utf8",
             #[cfg(feature = "rss")]
             RhiaqeyError::RSS(_) => "rss",
             #[cfg(feature = "reqwest")]
@@ -112,30 +116,36 @@ impl From<serde_json::Error> for RhiaqeyError {
     }
 }
 
+impl From<Utf8Error> for RhiaqeyError {
+    fn from(value: Utf8Error) -> Self {
+        Self::UTF8Error(value)
+    }
+}
+
 #[cfg(feature = "rss")]
 impl From<rss::Error> for RhiaqeyError {
     fn from(value: rss::Error) -> Self {
-        RhiaqeyError::RSS(value)
+        Self::RSS(value)
     }
 }
 
 #[cfg(feature = "reqwest")]
 impl From<reqwest::Error> for RhiaqeyError {
     fn from(value: reqwest::Error) -> Self {
-        RhiaqeyError::Reqwest(value)
+        Self::Reqwest(value)
     }
 }
 
 #[cfg(feature = "quick-xml")]
 impl From<quick_xml::Error> for RhiaqeyError {
     fn from(value: quick_xml::Error) -> Self {
-        RhiaqeyError::QuickXML(value)
+        Self::QuickXML(value)
     }
 }
 
 #[cfg(feature = "quick-xml")]
 impl From<quick_xml::DeError> for RhiaqeyError {
     fn from(value: quick_xml::DeError) -> Self {
-        RhiaqeyError::QuickXMLDeserialization(value)
+        Self::QuickXMLDeserialization(value)
     }
 }
