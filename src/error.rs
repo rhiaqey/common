@@ -1,5 +1,6 @@
 use std::fmt::{Debug, Display};
 use std::str::Utf8Error;
+use std::string::FromUtf8Error;
 
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 
@@ -119,6 +120,12 @@ impl From<serde_json::Error> for RhiaqeyError {
 impl From<Utf8Error> for RhiaqeyError {
     fn from(value: Utf8Error) -> Self {
         Self::UTF8Error(value)
+    }
+}
+
+impl From<FromUtf8Error> for RhiaqeyError {
+    fn from(value: FromUtf8Error) -> Self {
+        Self::UTF8Error(value.utf8_error())
     }
 }
 
