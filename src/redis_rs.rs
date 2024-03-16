@@ -5,14 +5,14 @@ pub fn connect(settings: &RedisSettings) -> Result<redis::Client, RhiaqeyError> 
 
     let connect_uri = match settings.redis_address.as_ref() {
         None => format!(
-            "redis+sentinel://:{}@{}/{}?sentinel_password={}",
+            "redis+sentinel://{}@{}/{}?sentinel_password={}",
             password,
             settings.redis_sentinel_addresses.as_ref().unwrap(),
             settings.redis_sentinel_master.as_ref().unwrap(),
             password,
         ),
         Some(address) => format!(
-            "redis://:{}@{}",
+            "redis://{}@{}",
             password,
             address
         ),
