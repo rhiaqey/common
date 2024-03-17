@@ -79,3 +79,18 @@ impl From<StreamMessage> for ClientMessage {
         }
     }
 }
+
+impl From<&StreamMessage> for ClientMessage {
+    fn from(value: &StreamMessage) -> Self {
+        ClientMessage{
+            data_type: ClientMessageDataType::Data as u8,
+            channel: value.channel.clone().into(),
+            key: value.key.clone().into(),
+            value: ClientMessageValue::Data(value.value.clone()),
+            tag: value.tag.clone(),
+            category: value.category.clone(),
+            hub_id: value.hub_id.clone(),
+            publisher_id: value.publisher_id.clone(),
+        }
+    }
+}
