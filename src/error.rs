@@ -1,8 +1,11 @@
 use std::fmt::{Debug, Display};
 use std::str::Utf8Error;
 use std::string::FromUtf8Error;
+use axum_core::response::{IntoResponse, Response};
+use hyper::StatusCode;
 
 use serde::{ser::SerializeStruct, Serialize, Serializer};
+use serde_json::json;
 
 #[derive(Debug)]
 pub enum RhiaqeyError {
@@ -154,5 +157,19 @@ impl From<quick_xml::Error> for RhiaqeyError {
 impl From<quick_xml::DeError> for RhiaqeyError {
     fn from(value: quick_xml::DeError) -> Self {
         Self::QuickXMLDeserialization(value)
+    }
+}
+
+impl IntoResponse for RhiaqeyError {
+    fn into_response(self) -> Response {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            [(hyper::header::CONTENT_TYPE, "application/json")],
+            json!({
+                "message": format!("{}", self),
+                "kind": self.kind()
+            })
+                .to_string()
+        ).into_response()
     }
 }
