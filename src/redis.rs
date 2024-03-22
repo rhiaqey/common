@@ -63,3 +63,9 @@ pub async fn connect_and_ping_async(config: RedisSettings) -> Result<Client, Rhi
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RhiaqeyBufVec(#[serde(deserialize_with = "deserialize_byte_buf")] pub Vec<u8>);
 impl PrimitiveResponse for RhiaqeyBufVec {}
+
+impl From<Vec<u8>> for RhiaqeyBufVec {
+    fn from(value: Vec<u8>) -> Self {
+        Self(value)
+    }
+}
