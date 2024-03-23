@@ -14,7 +14,7 @@ use crate::pubsub::RPCMessage;
 use crate::redis::{connect_and_ping_async, RhiaqeyBufVec};
 use crate::security::SecurityKey;
 use crate::stream::StreamMessage;
-use crate::{security, topics};
+use crate::{RhiaqeyResult, security, topics};
 
 pub struct Executor {
     env: Arc<Env>,
@@ -205,7 +205,7 @@ impl Executor {
         Ok(t)
     }
 
-    pub async fn publish(&self, message: impl Into<StreamMessage>, options: ExecutorPublishOptions) -> Result<usize, RhiaqeyError> {
+    pub async fn publish(&self, message: impl Into<StreamMessage>, options: ExecutorPublishOptions) -> RhiaqeyResult<usize> {
         info!("publishing message to the channels");
 
         let mut stream_msg: StreamMessage = message.into();
@@ -220,6 +220,9 @@ impl Executor {
         let channels = self.channels.read().await;
 
         let channel_size = channels.len();
+        if channel_size == 0 {
+            return Ok(0);
+        }
 
         for channel in channels.iter() {
             stream_msg.channel = channel.name.to_string();
