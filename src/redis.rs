@@ -2,7 +2,7 @@ use rustis::client::Client;
 use rustis::commands::{ConnectionCommands, PingOptions};
 use rustis::resp::{deserialize_byte_buf, PrimitiveResponse};
 use serde::{Deserialize, Serialize};
-use crate::error::RhiaqeyError;
+use crate::RhiaqeyResult;
 
 fn default_redis_db() -> Option<String> {
     Some("0".to_string())
@@ -23,7 +23,7 @@ pub struct RedisSettings {
     pub redis_sentinel_master: Option<String>,
 }
 
-pub async fn connect_async(settings: RedisSettings) -> Result<Client, RhiaqeyError> {
+pub async fn connect_async(settings: RedisSettings) -> RhiaqeyResult<Client> {
     let password = settings.redis_password.unwrap();
 
     let connect_uri = match settings.redis_address {
@@ -45,7 +45,7 @@ pub async fn connect_async(settings: RedisSettings) -> Result<Client, RhiaqeyErr
     Ok(client)
 }
 
-pub async fn connect_and_ping_async(config: RedisSettings) -> Result<Client, RhiaqeyError> {
+pub async fn connect_and_ping_async(config: RedisSettings) -> RhiaqeyResult<Client> {
     let redis_connection = connect_async(config).await?;
 
     let result: String = redis_connection
