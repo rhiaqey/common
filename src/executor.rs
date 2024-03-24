@@ -204,7 +204,7 @@ impl Executor {
     }
 
     pub async fn publish(&self, message: impl Into<StreamMessage>, options: ExecutorPublishOptions) -> RhiaqeyResult<usize> {
-        info!("publishing message to the channels");
+        info!("publishing message to all valid channels");
 
         let mut stream_msg: StreamMessage = message.into();
 
