@@ -17,7 +17,7 @@ pub fn connect(settings: &RedisSettings) -> RhiaqeyResult<Client> {
                         settings.get_db())
             };
 
-            redis::Client::open(connect_uri)
+            Client::open(connect_uri)
         }
         RedisMode::Sentinel => {
             let nodes = settings.get_sentinel_nodes();

@@ -1,8 +1,8 @@
+use crate::RhiaqeyResult;
 use rhiaqey_sdk_rs::gateway::GatewayMessage;
 use rhiaqey_sdk_rs::message::MessageValue;
 use rhiaqey_sdk_rs::producer::ProducerMessage;
 use serde::{Deserialize, Serialize};
-use crate::RhiaqeyResult;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum StreamMessageDataType {
@@ -27,8 +27,9 @@ pub struct StreamMessage {
     #[serde(rename = "val")]
     pub value: MessageValue,
 
-    // If timestamp is provided there will a check in timestamps. If latest entry in database is
-    // older than the message then we do not store the new message
+    // If timestamp is provided there will a check in timestamps.
+    // If the latest entry in a database is older than the message,
+    // then we do not store the new message
     #[serde(rename = "tms", skip_serializing_if = "Option::is_none")]
     pub timestamp: Option<u64>,
 
@@ -75,7 +76,7 @@ impl StreamMessage {
 
 impl From<ProducerMessage> for StreamMessage {
     fn from(value: ProducerMessage) -> Self {
-        StreamMessage{
+        StreamMessage {
             data_type: StreamMessageDataType::Data as u8,
             key: value.key,
             value: value.value,
@@ -96,7 +97,7 @@ impl From<ProducerMessage> for StreamMessage {
 
 impl From<GatewayMessage> for StreamMessage {
     fn from(value: GatewayMessage) -> Self {
-        StreamMessage{
+        StreamMessage {
             data_type: StreamMessageDataType::Data as u8,
             key: value.key,
             value: value.value,

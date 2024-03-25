@@ -1,15 +1,15 @@
-use std::borrow::Cow;
+use crate::stream::StreamMessage;
 use rhiaqey_sdk_rs::channel::Channel;
 use rhiaqey_sdk_rs::message::MessageValue;
 use serde::{Deserialize, Serialize};
-use crate::stream::StreamMessage;
+use std::borrow::Cow;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum ClientMessageDataType {
-    ClientConnection = 0,           // sent by the hub to the client with unique client id
-    ClientChannelSubscription = 1,  // set by the hub to the client when they subscribe to a channel
-    Data = 10,                      // sent data from hub to client
-    Ping = 100,                     // sent by the hub to keep the client connect alive
+    ClientConnection = 0, // sent by the hub to the client with unique client id
+    ClientChannelSubscription = 1, // set by the hub to the client when they subscribe to a channel
+    Data = 10,            // sent data from hub to client
+    Ping = 100,           // sent by the hub to keep the client connect alive
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -20,7 +20,7 @@ pub struct ClientMessageValueClientConnection {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ClientMessageValueClientChannelSubscription {
-    pub channel: Channel
+    pub channel: Channel,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -29,7 +29,7 @@ pub enum ClientMessageValue {
     ClientConnection(ClientMessageValueClientConnection),
     ClientChannelSubscription(ClientMessageValueClientChannelSubscription),
     Data(MessageValue),
-    Ping(u64)
+    Ping(u64),
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -67,7 +67,7 @@ pub struct ClientMessage {
 
 impl From<StreamMessage> for ClientMessage {
     fn from(value: StreamMessage) -> Self {
-        ClientMessage{
+        ClientMessage {
             data_type: ClientMessageDataType::Data as u8,
             channel: value.channel.into(),
             key: value.key.into(),
@@ -82,7 +82,7 @@ impl From<StreamMessage> for ClientMessage {
 
 impl From<&StreamMessage> for ClientMessage {
     fn from(value: &StreamMessage) -> Self {
-        ClientMessage{
+        ClientMessage {
             data_type: ClientMessageDataType::Data as u8,
             channel: value.channel.clone().into(),
             key: value.key.clone().into(),

@@ -1,21 +1,23 @@
-use log::{debug, info, trace};
-use rhiaqey_sdk_rs::channel::{Channel, ChannelList};
-use rustis::client::{Client, PubSubMessage, PubSubStream};
-use rustis::commands::{PubSubCommands, StreamCommands, StringCommands, XAddOptions, XTrimOperator, XTrimOptions};
-use serde::de::DeserializeOwned;
-use std::fmt::Debug;
-use std::sync::Arc;
-use redis::Commands;
-use rhiaqey_sdk_rs::message::MessageValue;
-use serde::{Deserialize, Serialize};
-use tokio::sync::{Mutex, RwLock};
 use crate::env::Env;
 use crate::pubsub::RPCMessage;
 use crate::redis::{connect_and_ping_async, RhiaqeyBufVec};
+use crate::redis_rs::connect_and_ping;
 use crate::security::SecurityKey;
 use crate::stream::StreamMessage;
-use crate::{RhiaqeyResult, security, topics};
-use crate::redis_rs::connect_and_ping;
+use crate::{security, topics, RhiaqeyResult};
+use log::{debug, info, trace};
+use redis::Commands;
+use rhiaqey_sdk_rs::channel::{Channel, ChannelList};
+use rhiaqey_sdk_rs::message::MessageValue;
+use rustis::client::{Client, PubSubMessage, PubSubStream};
+use rustis::commands::{
+    PubSubCommands, StreamCommands, StringCommands, XAddOptions, XTrimOperator, XTrimOptions,
+};
+use serde::de::DeserializeOwned;
+use serde::{Deserialize, Serialize};
+use std::fmt::Debug;
+use std::sync::Arc;
+use tokio::sync::{Mutex, RwLock};
 
 pub struct Executor {
     env: Arc<Env>,
@@ -27,7 +29,7 @@ pub struct Executor {
 
 #[derive(Default, Clone, Debug)]
 pub struct ExecutorPublishOptions {
-    pub trim_threshold: Option<i64>
+    pub trim_threshold: Option<i64>,
 }
 
 #[derive(Serialize, Deserialize, Default, Clone, Debug)]
@@ -106,29 +108,32 @@ impl Executor {
         trace!("got publisher channels {}", publisher_channels_result);
 
         let all_publisher_channels: PublisherChannel =
-            serde_json::from_str(publisher_channels_result.as_str())
-                .unwrap_or(PublisherChannel{ name: self.get_name(), channels: vec![]});
-        trace!("got all publisher channels result {:?}", all_publisher_channels);
+            serde_json::from_str(publisher_channels_result.as_str()).unwrap_or(PublisherChannel {
+                name: self.get_name(),
+                channels: vec![],
+            });
+        trace!(
+            "got all publisher channels result {:?}",
+            all_publisher_channels
+        );
 
-        let channels = all_channels.channels.iter()
-            .filter(|x| all_publisher_channels.channels.iter()
-                .any(|y| x.name.eq(y))).cloned()
+        let channels = all_channels
+            .channels
+            .iter()
+            .filter(|x| all_publisher_channels.channels.iter().any(|y| x.name.eq(y)))
+            .cloned()
             .collect::<Vec<_>>();
         debug!("found {} channel(s) for publisher", channels.len());
 
         Ok(channels)
     }
 
-    pub async fn read_settings_async<T: DeserializeOwned + Default + Debug>(&self) -> RhiaqeyResult<T> {
-        let settings_key =
-            topics::publisher_settings_key(self.get_namespace(), self.get_name());
+    pub async fn read_settings_async<T: DeserializeOwned + Default + Debug>(
+        &self,
+    ) -> RhiaqeyResult<T> {
+        let settings_key = topics::publisher_settings_key(self.get_namespace(), self.get_name());
 
-        let result: RhiaqeyBufVec = self
-            .redis
-            .lock()
-            .await
-            .get(settings_key)
-            .await?;
+        let result: RhiaqeyBufVec = self.redis.lock().await.get(settings_key).await?;
         debug!("encrypted settings retrieved");
 
         let keys = self.security.lock().await;
@@ -190,16 +195,27 @@ impl Executor {
         // Prepare to broadcast to all hubs that we have clean message
         let raw = message.ser_to_string()?;
 
-        let reply: usize = self.redis_rs
-            .lock().unwrap()
-            .publish(clean_topic.clone(), raw).unwrap_or(0);
+        let reply: usize = self
+            .redis_rs
+            .lock()
+            .unwrap()
+            .publish(clean_topic.clone(), raw)
+            .unwrap_or(0);
 
-        trace!("message sent to pubsub {} and received {} as reply", clean_topic, reply);
+        trace!(
+            "message sent to pubsub {} and received {} as reply",
+            clean_topic,
+            reply
+        );
 
         Ok(reply)
     }
 
-    pub async fn publish_async(&self, message: impl Into<StreamMessage>, options: ExecutorPublishOptions) -> RhiaqeyResult<usize> {
+    pub async fn publish_async(
+        &self,
+        message: impl Into<StreamMessage>,
+        options: ExecutorPublishOptions,
+    ) -> RhiaqeyResult<usize> {
         info!("publishing message to all valid channels");
 
         let mut stream_msg: StreamMessage = message.into();
@@ -240,19 +256,24 @@ impl Executor {
             let xadd_options = XAddOptions::default().trim_options(XTrimOptions::max_len(
                 XTrimOperator::Approximately,
                 // channel.size as i64,
-                options.trim_threshold.unwrap_or(10000)
+                options.trim_threshold.unwrap_or(10000),
             ));
 
             let data = stream_msg.ser_to_string()?;
 
-            let id: String = redis.xadd(
-                topic.clone(),
-                "*",
-                [("raw", data.clone()), ("tag", tag.clone()), ("tms", format!("{}", tms))],
-                xadd_options,
-                // XAddOptions::default()
-            )
-            .await?;
+            let id: String = redis
+                .xadd(
+                    topic.clone(),
+                    "*",
+                    [
+                        ("raw", data.clone()),
+                        ("tag", tag.clone()),
+                        ("tms", format!("{}", tms)),
+                    ],
+                    xadd_options,
+                    // XAddOptions::default()
+                )
+                .await?;
 
             debug!(
                 "sent message {} to channel {} in topic {}",

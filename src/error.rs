@@ -1,8 +1,8 @@
+use axum_core::response::{IntoResponse, Response};
+use hyper::StatusCode;
 use std::fmt::{Debug, Display};
 use std::str::Utf8Error;
 use std::string::FromUtf8Error;
-use axum_core::response::{IntoResponse, Response};
-use hyper::StatusCode;
 
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use serde_json::json;
@@ -169,7 +169,8 @@ impl IntoResponse for RhiaqeyError {
                 "message": format!("{}", self),
                 "kind": self.kind()
             })
-                .to_string()
-        ).into_response()
+            .to_string(),
+        )
+            .into_response()
     }
 }

@@ -1,8 +1,8 @@
+use crate::RhiaqeyResult;
 use rustis::client::Client;
 use rustis::commands::{ConnectionCommands, PingOptions};
 use rustis::resp::{deserialize_byte_buf, PrimitiveResponse};
 use serde::{Deserialize, Serialize};
-use crate::RhiaqeyResult;
 
 fn default_redis_db() -> String {
     String::from("0")
@@ -17,7 +17,7 @@ fn default_redis_sentinel_master() -> String {
 pub enum RedisMode {
     #[default]
     Standalone,
-    Sentinel
+    Sentinel,
 }
 
 #[derive(Deserialize, Default, Clone, Debug)]
@@ -56,13 +56,16 @@ impl RedisSettings {
 
     pub fn get_sentinel_nodes(&self) -> Vec<String> {
         if let Some(nodes_str) = self.redis_sentinel_addresses.clone() {
-            return nodes_str.split(',').map(|x| {
-                if x.starts_with("redis://") {
-                    x.to_string()
-                } else {
-                    format!("redis://{}", x)
-                }
-            }).collect();
+            return nodes_str
+                .split(',')
+                .map(|x| {
+                    if x.starts_with("redis://") {
+                        x.to_string()
+                    } else {
+                        format!("redis://{}", x)
+                    }
+                })
+                .collect();
         }
 
         vec![]
@@ -74,14 +77,12 @@ pub async fn connect_async(settings: RedisSettings) -> RhiaqeyResult<Client> {
 
     let connect_uri = match settings.redis_password {
         None => format!("redis://{}", address),
-        Some(password) => format!(
-            "redis://:{}@{}",
-            password,
-            address
-        )
+        Some(password) => format!("redis://:{}@{}", password, address),
     };
 
-    let client = Client::connect(connect_uri).await.map_err(|x| x.to_string())?;
+    let client = Client::connect(connect_uri)
+        .await
+        .map_err(|x| x.to_string())?;
     Ok(client)
 }
 
@@ -116,7 +117,7 @@ mod tests {
 
     #[test]
     fn get_db() {
-        let config = RedisSettings{
+        let config = RedisSettings {
             redis_db: String::from("2"),
             ..Default::default()
         };
@@ -125,7 +126,7 @@ mod tests {
 
     #[test]
     fn get_db_fallback() {
-        let config = RedisSettings{
+        let config = RedisSettings {
             ..Default::default()
         };
         assert_eq!(config.get_db(), 0)
@@ -133,16 +134,19 @@ mod tests {
 
     #[test]
     fn get_master_name() {
-        let config = RedisSettings{
+        let config = RedisSettings {
             redis_sentinel_master: String::from("some_weird_name"),
             ..Default::default()
         };
-        assert_eq!(config.get_sentinel_master_name(), "some_weird_name".to_string())
+        assert_eq!(
+            config.get_sentinel_master_name(),
+            "some_weird_name".to_string()
+        )
     }
 
     #[test]
     fn get_master_name_fallback() {
-        let config = RedisSettings{
+        let config = RedisSettings {
             ..Default::default()
         };
         assert_eq!(config.get_sentinel_master_name(), String::from(""))
@@ -150,7 +154,7 @@ mod tests {
 
     #[test]
     fn get_sentinel_node() {
-        let config = RedisSettings{
+        let config = RedisSettings {
             redis_sentinel_addresses: Some("redis://localhost:3001".to_string()),
             ..Default::default()
         };
@@ -159,7 +163,7 @@ mod tests {
 
     #[test]
     fn get_sentinel_node_normalized() {
-        let config = RedisSettings{
+        let config = RedisSettings {
             redis_sentinel_addresses: Some("localhost:3001".to_string()),
             ..Default::default()
         };
@@ -168,28 +172,45 @@ mod tests {
 
     #[test]
     fn get_sentinel_nodes() {
-        let config = RedisSettings{
-            redis_sentinel_addresses: Some("redis://localhost:3001,redis://localhost:3002".to_string()),
+        let config = RedisSettings {
+            redis_sentinel_addresses: Some(
+                "redis://localhost:3001,redis://localhost:3002".to_string(),
+            ),
             ..Default::default()
         };
-        assert_eq!(config.get_sentinel_nodes(), vec!["redis://localhost:3001", "redis://localhost:3002"])
+        assert_eq!(
+            config.get_sentinel_nodes(),
+            vec!["redis://localhost:3001", "redis://localhost:3002"]
+        )
     }
 
     #[test]
     fn get_sentinel_nodes_normalized() {
-        let config = RedisSettings{
+        let config = RedisSettings {
             redis_sentinel_addresses: Some("localhost:3001/,localhost:3002".to_string()),
             ..Default::default()
         };
-        assert_eq!(config.get_sentinel_nodes(), vec!["redis://localhost:3001/", "redis://localhost:3002"])
+        assert_eq!(
+            config.get_sentinel_nodes(),
+            vec!["redis://localhost:3001/", "redis://localhost:3002"]
+        )
     }
 
     #[test]
     fn get_sentinel_nodes_normalized_mix() {
-        let config = RedisSettings{
-            redis_sentinel_addresses: Some("localhost:3001/,redis://localhost:3002,redis://localhost:3005/0".to_string()),
+        let config = RedisSettings {
+            redis_sentinel_addresses: Some(
+                "localhost:3001/,redis://localhost:3002,redis://localhost:3005/0".to_string(),
+            ),
             ..Default::default()
         };
-        assert_eq!(config.get_sentinel_nodes(), vec!["redis://localhost:3001/", "redis://localhost:3002", "redis://localhost:3005/0"])
+        assert_eq!(
+            config.get_sentinel_nodes(),
+            vec![
+                "redis://localhost:3001/",
+                "redis://localhost:3002",
+                "redis://localhost:3005/0"
+            ]
+        )
     }
 }

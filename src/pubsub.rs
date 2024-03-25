@@ -1,7 +1,7 @@
 use crate::stream::StreamMessage;
+use crate::RhiaqeyResult;
 use rhiaqey_sdk_rs::channel::ChannelList;
 use serde::{Deserialize, Serialize};
-use crate::RhiaqeyResult;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "PascalCase")]
@@ -16,7 +16,7 @@ pub struct PublisherRegistrationMessage {
     pub namespace: String,
 
     /// Each publisher must specify a schema
-    pub schema: serde_json::Value
+    pub schema: serde_json::Value,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -28,7 +28,7 @@ pub enum RPCMessageData {
     // this goes from hub to all hubs
     AssignChannels(ChannelList),
     // this goes from hub to publishers
-    UpdateSettings()
+    UpdateSettings(),
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

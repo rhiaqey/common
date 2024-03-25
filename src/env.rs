@@ -38,17 +38,17 @@ pub struct Env {
     /// Namespace of the k8s installation
     pub namespace: String,
 
-    /// Optional. If not set no encryption will be applied
+    /// Optional. If not set, no encryption will be applied
     pub private_key: Option<String>,
 
-    /// Optional. If not set no decryption will be possible
+    /// Optional. If not set, no decryption will be possible
     pub public_key: Option<String>,
 
     /// Optional since k8s is not required
     #[serde(flatten)]
     pub k8s: Option<KubernetesEnv>,
 
-    /// The public facing port that is only useful for gateways
+    /// The public-facing port that is only useful for gateways
     #[serde(default = "default_public_port")]
     pub public_port: Option<u16>,
 
