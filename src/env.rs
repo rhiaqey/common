@@ -6,6 +6,7 @@ use rsa::pkcs1::DecodeRsaPrivateKey;
 use crate::redis::RedisSettings;
 use serde::Deserialize;
 use crate::error::RhiaqeyError;
+use crate::RhiaqeyResult;
 
 #[derive(Deserialize, Default, Clone, Debug)]
 pub struct KubernetesEnv {
@@ -60,7 +61,7 @@ pub struct Env {
 }
 
 impl Env {
-    pub fn encrypt(&self, data: Vec<u8>) -> Result<Vec<u8>, RhiaqeyError> {
+    pub fn encrypt(&self, data: Vec<u8>) -> RhiaqeyResult<Vec<u8>> {
         if self.public_key.is_none() {
             trace!("no public key was found");
             return Ok(data);
@@ -94,7 +95,7 @@ impl Env {
         Ok(enc_data)
     }
 
-    pub fn decrypt(&self, data: Vec<u8>) -> Result<Vec<u8>, RhiaqeyError> {
+    pub fn decrypt(&self, data: Vec<u8>) -> RhiaqeyResult<Vec<u8>> {
         if self.private_key.is_none() {
             trace!("no private key was found");
             return Ok(data);

@@ -5,6 +5,7 @@ use rustis::commands::{PubSubCommands, StreamCommands, StringCommands, XAddOptio
 use serde::de::DeserializeOwned;
 use std::fmt::Debug;
 use std::sync::Arc;
+use redis::Commands;
 use rhiaqey_sdk_rs::message::MessageValue;
 use serde::{Deserialize, Serialize};
 use tokio::sync::{Mutex, RwLock};
@@ -14,10 +15,12 @@ use crate::redis::{connect_and_ping_async, RhiaqeyBufVec};
 use crate::security::SecurityKey;
 use crate::stream::StreamMessage;
 use crate::{RhiaqeyResult, security, topics};
+use crate::redis_rs::connect_and_ping;
 
 pub struct Executor {
     env: Arc<Env>,
     redis: Arc<Mutex<Client>>,
+    redis_rs: Arc<std::sync::Mutex<redis::Connection>>,
     channels: Arc<RwLock<Vec<Channel>>>,
     security: Arc<Mutex<SecurityKey>>,
 }
@@ -55,19 +58,19 @@ impl Executor {
         self.env.namespace.clone()
     }
 
-    pub async fn set_channels(&mut self, channels: Vec<Channel>) {
+    pub async fn set_channels_async(&mut self, channels: Vec<Channel>) {
         let mut locked_channels = self.channels.write().await;
         *locked_channels = channels;
     }
 
-    pub async fn get_channel_count(&self) -> usize {
+    pub async fn get_channel_count_async(&self) -> usize {
         self.channels.read().await.len()
     }
 
-    pub async fn load_key(config: &Env, client: &Client) -> RhiaqeyResult<SecurityKey> {
+    fn load_key(config: &Env, client: &mut redis::Connection) -> RhiaqeyResult<SecurityKey> {
         let namespace = config.namespace.clone();
         let security_key = topics::security_key(namespace);
-        let security_str: String = client.get(security_key.clone()).await?;
+        let security_str: String = client.get(security_key.clone()).unwrap_or(String::from(""));
 
         let mut security = serde_json::from_str::<SecurityKey>(security_str.as_str())?;
 
@@ -79,7 +82,7 @@ impl Executor {
         Ok(security)
     }
 
-    pub async fn read_channels(&self) -> RhiaqeyResult<Vec<Channel>> {
+    pub async fn read_channels_async(&self) -> RhiaqeyResult<Vec<Channel>> {
         debug!("reading all assigned channels");
 
         // calculate channels key
@@ -116,7 +119,7 @@ impl Executor {
         Ok(channels)
     }
 
-    pub async fn read_settings<T: DeserializeOwned + Default + Debug>(&self) -> RhiaqeyResult<T> {
+    pub async fn read_settings_async<T: DeserializeOwned + Default + Debug>(&self) -> RhiaqeyResult<T> {
         let settings_key =
             topics::publisher_settings_key(self.get_namespace(), self.get_name());
 
@@ -143,34 +146,30 @@ impl Executor {
     }
 
     pub async fn setup(config: Env) -> RhiaqeyResult<Executor> {
+        let redis_rs_client = connect_and_ping(&config.redis)?;
+        let mut redis_rs_connection = redis_rs_client.get_connection()?;
+        let security = Self::load_key(&config, &mut redis_rs_connection)?;
         let client = connect_and_ping_async(config.redis.clone()).await?;
-        let security = Self::load_key(&config, &client).await?;
 
         let mut executor = Executor {
             env: Arc::from(config),
             channels: Arc::from(RwLock::new(vec![])),
             redis: Arc::new(Mutex::new(client)),
+            redis_rs: Arc::new(std::sync::Mutex::new(redis_rs_connection)),
             security: Arc::new(Mutex::new(security)),
         };
 
-        let channels = executor.read_channels().await?;
-        executor.set_channels(channels).await;
+        let channels = executor.read_channels_async().await?;
+        executor.set_channels_async(channels).await;
 
         Ok(executor)
     }
 
     pub fn extract_pubsub_message(&mut self, message: PubSubMessage) -> Option<RPCMessage> {
-        trace!("handle pubsub message");
-        if let Ok(data) = serde_json::from_slice::<RPCMessage>(message.payload.as_slice()) {
-            trace!("pubsub message contains an RPC message {:?}", data);
-            // self.handle_rpc_message(data).await;
-            Some(data)
-        } else {
-            None
-        }
+        serde_json::from_slice::<RPCMessage>(message.payload.as_slice()).ok()
     }
 
-    pub async fn create_hub_to_publishers_pubsub(&mut self) -> RhiaqeyResult<PubSubStream> {
+    pub async fn create_hub_to_publishers_pubsub_async(&mut self) -> RhiaqeyResult<PubSubStream> {
         let client = connect_and_ping_async(self.env.redis.clone()).await?;
 
         let key = topics::hub_to_publisher_pubsub_topic(
@@ -183,7 +182,7 @@ impl Executor {
         Ok(stream)
     }
 
-    pub async fn rpc(&self, namespace: String, message: RPCMessage) -> RhiaqeyResult<usize> {
+    pub fn rpc(&self, namespace: String, message: RPCMessage) -> RhiaqeyResult<usize> {
         info!("broadcasting rpc message to all hubs");
 
         let clean_topic = topics::hub_raw_to_hub_clean_pubsub_topic(namespace);
@@ -191,19 +190,16 @@ impl Executor {
         // Prepare to broadcast to all hubs that we have clean message
         let raw = message.ser_to_string()?;
 
-        let t = self.redis
-            .lock()
-            .await
-            .clone()
-            .publish(clean_topic.clone(), raw)
-            .await?;
+        let reply: usize = self.redis_rs
+            .lock().unwrap()
+            .publish(clean_topic.clone(), raw).unwrap_or(0);
 
-        trace!("message sent to pubsub {}", clean_topic);
+        trace!("message sent to pubsub {} and received {} as reply", clean_topic, reply);
 
-        Ok(t)
+        Ok(reply)
     }
 
-    pub async fn publish(&self, message: impl Into<StreamMessage>, options: ExecutorPublishOptions) -> RhiaqeyResult<usize> {
+    pub async fn publish_async(&self, message: impl Into<StreamMessage>, options: ExecutorPublishOptions) -> RhiaqeyResult<usize> {
         info!("publishing message to all valid channels");
 
         let mut stream_msg: StreamMessage = message.into();

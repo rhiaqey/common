@@ -1,7 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-use crate::error::RhiaqeyError;
-
 use aes_gcm_siv::{
     aead::{Aead, KeyInit, OsRng},
     Aes256GcmSiv, Nonce // Or `Aes128GcmSiv`
@@ -9,7 +7,7 @@ use aes_gcm_siv::{
 
 use rand::distributions::Alphanumeric;
 use rand::Rng;
-
+use crate::RhiaqeyResult;
 
 
 pub fn generate_key() -> Vec<u8> {
@@ -26,18 +24,18 @@ pub fn generate_nonce() -> Vec<u8> {
     s.into_bytes()
 }
 
-pub fn aes_encrypt(nonce: &[u8], key: &[u8], data: &[u8]) -> Result<Vec<u8>, RhiaqeyError> {
+pub fn aes_encrypt(nonce: &[u8], key: &[u8], data: &[u8]) -> RhiaqeyResult<Vec<u8>> {
     let cipher = Aes256GcmSiv::new_from_slice(key)
         .map_err(|x| x.to_string())?;
     cipher.encrypt(Nonce::from_slice(nonce), data)
-        .map_err(|x| RhiaqeyError::from(x.to_string()))
+        .map_err(|x| x.to_string().into())
 }
 
-pub fn aes_decrypt(nonce: &[u8], key: &[u8], data: &[u8]) -> Result<Vec<u8>, RhiaqeyError> {
+pub fn aes_decrypt(nonce: &[u8], key: &[u8], data: &[u8]) -> RhiaqeyResult<Vec<u8>> {
     let cipher = Aes256GcmSiv::new_from_slice(key)
         .map_err(|x| x.to_string())?;
     cipher.decrypt(Nonce::from_slice(nonce), data)
-        .map_err(|x| RhiaqeyError::from(x.to_string()))
+        .map_err(|x| x.to_string().into())
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

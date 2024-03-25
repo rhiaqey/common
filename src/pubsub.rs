@@ -1,7 +1,7 @@
 use crate::stream::StreamMessage;
 use rhiaqey_sdk_rs::channel::ChannelList;
 use serde::{Deserialize, Serialize};
-use crate::error::RhiaqeyError;
+use crate::RhiaqeyResult;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "PascalCase")]
@@ -38,11 +38,11 @@ pub struct RPCMessage {
 }
 
 impl RPCMessage {
-    pub fn ser_to_string(&self) -> Result<String, RhiaqeyError> {
+    pub fn ser_to_string(&self) -> RhiaqeyResult<String> {
         serde_json::to_string(self).map_err(|x| x.into())
     }
 
-    pub fn der_from_string(message: &str) -> Result<RPCMessage, RhiaqeyError> {
+    pub fn der_from_string(message: &str) -> RhiaqeyResult<RPCMessage> {
         serde_json::from_str::<RPCMessage>(message).map_err(|x| x.into())
     }
 }
