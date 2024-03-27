@@ -25,8 +25,10 @@ pub enum RPCMessageData {
     RegisterPublisher(PublisherRegistrationMessage),
     // this comes from hub raw to hub clean
     NotifyClients(StreamMessage),
+    // this goes from hub to hub to notify them all to reload
+    UpdateHubSettings(),
     // this goes from hub to publishers
-    UpdateSettings(),
+    UpdatePublisherSettings(),
     // create channels from http admin
     CreateChannels(Vec<Channel>),
     // delete channels from http admin
