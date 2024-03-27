@@ -1,6 +1,6 @@
 use crate::stream::StreamMessage;
 use crate::RhiaqeyResult;
-use rhiaqey_sdk_rs::channel::ChannelList;
+use rhiaqey_sdk_rs::channel::Channel;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -25,10 +25,16 @@ pub enum RPCMessageData {
     RegisterPublisher(PublisherRegistrationMessage),
     // this comes from hub raw to hub clean
     NotifyClients(StreamMessage),
-    // this goes from hub to all hubs
-    AssignChannels(ChannelList),
     // this goes from hub to publishers
     UpdateSettings(),
+    // create channels from http admin
+    CreateChannels(Vec<Channel>),
+    // delete channels from http admin
+    DeleteChannels(Vec<Channel>),
+    // empty channel content from http admin
+    PurgeChannel(String),
+    // this goes from hub to all publishers
+    AssignChannels(Vec<Channel>),
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
