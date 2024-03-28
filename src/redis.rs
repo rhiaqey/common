@@ -1,4 +1,4 @@
-use crate::RhiaqeyResult;
+use crate::result::RhiaqeyResult;
 use rustis::client::Client;
 use rustis::commands::{ConnectionCommands, PingOptions};
 use rustis::resp::{deserialize_byte_buf, PrimitiveResponse};

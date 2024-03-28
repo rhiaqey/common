@@ -1,12 +1,12 @@
-use std::fs;
-use log::{debug, trace, warn};
-use rsa::{Oaep, RsaPrivateKey, RsaPublicKey};
-use rsa::pkcs1::DecodeRsaPublicKey;
-use rsa::pkcs1::DecodeRsaPrivateKey;
-use crate::redis::RedisSettings;
-use serde::Deserialize;
 use crate::error::RhiaqeyError;
-use crate::RhiaqeyResult;
+use crate::redis::RedisSettings;
+use crate::result::RhiaqeyResult;
+use log::{debug, trace, warn};
+use rsa::pkcs1::DecodeRsaPrivateKey;
+use rsa::pkcs1::DecodeRsaPublicKey;
+use rsa::{Oaep, RsaPrivateKey, RsaPublicKey};
+use serde::Deserialize;
+use std::fs;
 
 #[derive(Deserialize, Default, Clone, Debug)]
 pub struct KubernetesEnv {
@@ -67,7 +67,8 @@ impl Env {
             return Ok(data);
         }
 
-        let public_key_optional = self.public_key
+        let public_key_optional = self
+            .public_key
             .as_ref()
             .ok_or(RhiaqeyError::from("failed to obtain public key"))?;
 
@@ -87,7 +88,8 @@ impl Env {
 
         let mut rng = rand::thread_rng();
         let padding = Oaep::new::<sha2::Sha256>();
-        let enc_data = rsa_public_key.encrypt(&mut rng, padding, data.as_slice())
+        let enc_data = rsa_public_key
+            .encrypt(&mut rng, padding, data.as_slice())
             .map_err(|x| RhiaqeyError::from(x.to_string()))?;
 
         trace!("data encrypted");
@@ -101,7 +103,8 @@ impl Env {
             return Ok(data);
         }
 
-        let private_key_optional = self.private_key
+        let private_key_optional = self
+            .private_key
             .as_ref()
             .ok_or(RhiaqeyError::from("failed to obtain private_key key"))?;
 
@@ -120,7 +123,8 @@ impl Env {
         trace!("RSA private key is ready");
 
         let padding = Oaep::new::<sha2::Sha256>();
-        let dec_data = rsa_private_key.decrypt(padding, data.as_slice())
+        let dec_data = rsa_private_key
+            .decrypt(padding, data.as_slice())
             .map_err(|x| RhiaqeyError::from(x.to_string()))?;
 
         trace!("data decrypted");

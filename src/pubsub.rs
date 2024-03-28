@@ -1,5 +1,5 @@
 use crate::stream::StreamMessage;
-use crate::RhiaqeyResult;
+use crate::result::RhiaqeyResult;
 use rhiaqey_sdk_rs::channel::{Channel, ChannelList};
 use serde::{Deserialize, Serialize};
 

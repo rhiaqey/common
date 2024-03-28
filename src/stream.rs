@@ -1,4 +1,4 @@
-use crate::RhiaqeyResult;
+use crate::result::RhiaqeyResult;
 use rhiaqey_sdk_rs::gateway::GatewayMessage;
 use rhiaqey_sdk_rs::message::MessageValue;
 use rhiaqey_sdk_rs::producer::ProducerMessage;

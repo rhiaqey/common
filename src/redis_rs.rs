@@ -1,6 +1,6 @@
 use redis::{Client, RedisConnectionInfo};
 use redis::sentinel::{Sentinel, SentinelNodeConnectionInfo};
-use crate::{redis::RedisSettings, RhiaqeyResult};
+use crate::{redis::RedisSettings, result::RhiaqeyResult};
 use crate::redis::RedisMode;
 
 pub fn connect(settings: &RedisSettings) -> RhiaqeyResult<Client> {

@@ -6,7 +6,7 @@ use aes_gcm_siv::{
     Nonce, // Or `Aes128GcmSiv`
 };
 
-use crate::RhiaqeyResult;
+use crate::result::RhiaqeyResult;
 use rand::distributions::Alphanumeric;
 use rand::Rng;
 
