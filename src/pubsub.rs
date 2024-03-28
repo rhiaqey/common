@@ -1,6 +1,6 @@
 use crate::stream::StreamMessage;
 use crate::RhiaqeyResult;
-use rhiaqey_sdk_rs::channel::Channel;
+use rhiaqey_sdk_rs::channel::{Channel, ChannelList};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -36,7 +36,7 @@ pub enum RPCMessageData {
     // empty channel content from http admin
     PurgeChannel(String),
     // this goes from hub to all publishers
-    AssignChannels(Vec<Channel>),
+    AssignChannels(ChannelList),
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
