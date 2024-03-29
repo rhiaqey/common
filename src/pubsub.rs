@@ -34,7 +34,7 @@ pub enum RPCMessageData {
     // delete channels from http admin
     DeleteChannels(Vec<Channel>),
     // empty channel content from http admin
-    PurgeChannel(String),
+    PurgeChannels(Vec<String>),
     // this goes from hub to all publishers
     AssignChannels(Vec<Channel>),
 }
