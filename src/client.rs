@@ -2,7 +2,6 @@ use crate::stream::StreamMessage;
 use rhiaqey_sdk_rs::channel::Channel;
 use rhiaqey_sdk_rs::message::MessageValue;
 use serde::{Deserialize, Serialize};
-use std::borrow::Cow;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum ClientMessageDataType {
@@ -34,18 +33,15 @@ pub enum ClientMessageValue {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ClientMessage {
-    // type of data we are sending to user
     #[serde(rename = "typ")]
     pub data_type: u8,
 
-    // source channel
-    #[serde(rename = "chn")]
-    pub channel: Cow<'static, str>,
+    #[serde(rename = "chn", skip_serializing_if = "String::is_empty")]
+    pub channel: String,
 
-    #[serde(rename = "key")]
-    pub key: Cow<'static, str>,
+    #[serde(rename = "key", skip_serializing_if = "String::is_empty")]
+    pub key: String,
 
-    // Any value
     #[serde(rename = "val")]
     pub value: ClientMessageValue,
 
