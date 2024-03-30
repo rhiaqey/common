@@ -65,8 +65,8 @@ impl From<StreamMessage> for ClientMessage {
     fn from(value: StreamMessage) -> Self {
         ClientMessage {
             data_type: ClientMessageDataType::Data as u8,
-            channel: value.channel.into(),
-            key: value.key.into(),
+            channel: value.channel,
+            key: value.key,
             value: ClientMessageValue::Data(value.value),
             tag: value.tag,
             category: value.category,
@@ -80,8 +80,8 @@ impl From<&StreamMessage> for ClientMessage {
     fn from(value: &StreamMessage) -> Self {
         ClientMessage {
             data_type: ClientMessageDataType::Data as u8,
-            channel: value.channel.clone().into(),
-            key: value.key.clone().into(),
+            channel: value.channel.clone(),
+            key: value.key.clone(),
             value: ClientMessageValue::Data(value.value.clone()),
             tag: value.tag.clone(),
             category: value.category.clone(),
