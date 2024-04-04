@@ -6,7 +6,11 @@
     "words": [
         "rhiaqey",
         "mymaster",
-        "reqwest"
+        "reqwest",
+        "rustis",
+        "pkcs1",
+        "oaep",
+        "xadd"
     ],
     "ignoreWords": [],
     "import": []

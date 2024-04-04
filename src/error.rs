@@ -29,6 +29,8 @@ pub enum RhiaqeyError {
     QuickXMLDeserialization(quick_xml::DeError),
 }
 
+impl std::error::Error for RhiaqeyError {}
+
 impl Display for RhiaqeyError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
