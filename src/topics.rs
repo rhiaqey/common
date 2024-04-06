@@ -70,16 +70,11 @@ pub fn publisher_settings_key<S: AsRef<str>>(namespace: S, publisher_name: S) ->
     )
 }
 
-pub fn publisher_schema_key<S: AsRef<str>>(
-    namespace: S,
-    publisher_name: S,
-    publisher_id: S,
-) -> String {
+pub fn publisher_schema_key<S: AsRef<str>>(namespace: S, publisher_name: S) -> String {
     format!(
-        "{}:publishers:{}:{}:schema",
+        "{}:publishers:{}:schema",
         namespace.as_ref(),
         publisher_name.as_ref(),
-        publisher_id.as_ref()
     )
 }
 
