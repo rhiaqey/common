@@ -5,7 +5,7 @@ use crate::redis_rs::connect_and_ping;
 use crate::security::SecurityKey;
 use crate::stream::StreamMessage;
 use crate::{result::RhiaqeyResult, security, topics};
-use anyhow::Context;
+use anyhow::{bail, Context};
 use log::{debug, info, trace};
 use redis::Commands;
 use rhiaqey_sdk_rs::channel::{Channel, ChannelList};
@@ -74,6 +74,9 @@ impl Executor {
         let namespace = config.namespace.clone();
         let security_key = topics::security_key(namespace);
         let security_str: String = client.get(security_key.clone()).unwrap_or(String::from(""));
+        if security_str.is_empty() {
+            bail!("security key is missing from database");
+        }
 
         let mut security = serde_json::from_str::<SecurityKey>(security_str.as_str())
             .context("failed to deserialize security key")?;
