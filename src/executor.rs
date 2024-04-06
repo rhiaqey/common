@@ -48,11 +48,11 @@ impl Executor {
         self.env.name.clone()
     }
 
-    pub fn get_public_port(&self) -> u32 {
+    pub fn get_public_port(&self) -> u16 {
         self.env.get_public_port()
     }
 
-    pub fn get_private_port(&self) -> u32 {
+    pub fn get_private_port(&self) -> u16 {
         self.env.get_private_port()
     }
 

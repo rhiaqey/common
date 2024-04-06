@@ -20,16 +20,16 @@ pub struct KubernetesEnv {
     pub k8s_node_ip: Option<String>,
 }
 
-fn default_public_port() -> Option<u32> {
+fn default_public_port() -> Option<u16> {
     Some(3000)
 }
 
-fn default_private_port() -> Option<u32> {
+fn default_private_port() -> Option<u16> {
     Some(3001)
 }
 
 fn default_id() -> Option<String> {
-    return Some(Ulid::new().to_string())
+    return Some(Ulid::new().to_string());
 }
 
 #[derive(Deserialize, Clone, Debug)]
@@ -56,11 +56,11 @@ pub struct Env {
 
     /// The public-facing port that is only useful for gateways
     #[serde(default = "default_public_port")]
-    public_port: Option<u32>,
+    public_port: Option<u16>,
 
     /// Internal port for all http interactions
     #[serde(default = "default_private_port")]
-    private_port: Option<u32>,
+    private_port: Option<u16>,
 
     #[serde(flatten)]
     pub redis: RedisSettings,
@@ -71,11 +71,11 @@ impl Env {
         self.id.clone().unwrap_or(default_id().unwrap()).to_string()
     }
 
-    pub fn get_private_port(&self) -> u32 {
+    pub fn get_private_port(&self) -> u16 {
         self.private_port.unwrap_or(default_private_port().unwrap())
     }
-    
-    pub fn get_public_port(&self) -> u32 {
+
+    pub fn get_public_port(&self) -> u16 {
         self.public_port.unwrap_or(default_public_port().unwrap())
     }
 
