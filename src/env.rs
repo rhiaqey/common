@@ -5,9 +5,9 @@ use log::{debug, trace, warn};
 use rsa::pkcs1::DecodeRsaPrivateKey;
 use rsa::pkcs1::DecodeRsaPublicKey;
 use rsa::{Oaep, RsaPrivateKey, RsaPublicKey};
+use rusty_ulid::generate_ulid_string;
 use serde::Deserialize;
 use std::fs;
-use ulid::Ulid;
 
 #[derive(Deserialize, Default, Clone, Debug)]
 pub struct KubernetesEnv {
@@ -29,7 +29,7 @@ fn default_private_port() -> Option<u16> {
 }
 
 fn default_id() -> Option<String> {
-    return Some(Ulid::new().to_string());
+    Some(generate_ulid_string())
 }
 
 #[derive(Deserialize, Clone, Debug)]
