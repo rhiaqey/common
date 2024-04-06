@@ -5,6 +5,7 @@ use crate::redis_rs::connect_and_ping;
 use crate::security::SecurityKey;
 use crate::stream::StreamMessage;
 use crate::{result::RhiaqeyResult, security, topics};
+use anyhow::Context;
 use log::{debug, info, trace};
 use redis::Commands;
 use rhiaqey_sdk_rs::channel::{Channel, ChannelList};
@@ -150,11 +151,17 @@ impl Executor {
         Ok(settings)
     }
 
-    pub async fn setup(config: Env) -> RhiaqeyResult<Executor> {
-        let redis_rs_client = connect_and_ping(&config.redis)?;
-        let mut redis_rs_connection = redis_rs_client.get_connection()?;
-        let security = Self::load_key(&config, &mut redis_rs_connection)?;
-        let client = connect_and_ping_async(config.redis.clone()).await?;
+    pub async fn setup(config: Env) -> anyhow::Result<Executor> {
+        let redis_rs_client =
+            connect_and_ping(&config.redis).context("Failed to connect to redis")?;
+        let mut redis_rs_connection = redis_rs_client
+            .get_connection()
+            .context("Failed to obtain redis connection")?;
+        let security = Self::load_key(&config, &mut redis_rs_connection)
+            .context("Failed to load security key")?;
+        let client = connect_and_ping_async(config.redis.clone())
+            .await
+            .context("Failed to connect asynchronously to redis")?;
 
         let mut executor = Executor {
             env: Arc::from(config),
@@ -164,7 +171,10 @@ impl Executor {
             security: Arc::new(Mutex::new(security)),
         };
 
-        let channels = executor.read_channels_async().await?;
+        let channels = executor
+            .read_channels_async()
+            .await
+            .context("Failed to ready channels asynchronously")?;
         executor.set_channels_async(channels).await;
 
         Ok(executor)
