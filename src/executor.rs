@@ -153,15 +153,15 @@ impl Executor {
 
     pub async fn setup(config: Env) -> anyhow::Result<Executor> {
         let redis_rs_client =
-            connect_and_ping(&config.redis).context("Failed to connect to redis")?;
+            connect_and_ping(&config.redis).context("failed to connect to redis")?;
         let mut redis_rs_connection = redis_rs_client
             .get_connection()
-            .context("Failed to obtain redis connection")?;
+            .context("failed to obtain redis connection")?;
         let security = Self::load_key(&config, &mut redis_rs_connection)
-            .context("Failed to load security key")?;
+            .context("failed to load security key")?;
         let client = connect_and_ping_async(config.redis.clone())
             .await
-            .context("Failed to connect asynchronously to redis")?;
+            .context("failed to connect asynchronously to redis")?;
 
         let mut executor = Executor {
             env: Arc::from(config),
@@ -174,7 +174,7 @@ impl Executor {
         let channels = executor
             .read_channels_async()
             .await
-            .context("Failed to ready channels asynchronously")?;
+            .context("failed to ready channels asynchronously")?;
         executor.set_channels_async(channels).await;
 
         Ok(executor)
