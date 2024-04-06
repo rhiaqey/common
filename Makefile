@@ -3,11 +3,11 @@ dev: build
 
 .PHONY: build
 build:
-	cargo build
+	cargo build --all-features
 
 .PHONY: prod
 prod:
-	cargo build --release
+	cargo build --release --all-features
 
 .PHONY: test
 test:

@@ -7,6 +7,7 @@ use rsa::pkcs1::DecodeRsaPublicKey;
 use rsa::{Oaep, RsaPrivateKey, RsaPublicKey};
 use serde::Deserialize;
 use std::fs;
+use ulid::Ulid;
 
 #[derive(Deserialize, Default, Clone, Debug)]
 pub struct KubernetesEnv {
@@ -19,18 +20,23 @@ pub struct KubernetesEnv {
     pub k8s_node_ip: Option<String>,
 }
 
-fn default_public_port() -> Option<u16> {
+fn default_public_port() -> Option<u32> {
     Some(3000)
 }
 
-fn default_private_port() -> Option<u16> {
+fn default_private_port() -> Option<u32> {
     Some(3001)
+}
+
+fn default_id() -> Option<String> {
+    return Some(Ulid::new().to_string())
 }
 
 #[derive(Deserialize, Clone, Debug)]
 pub struct Env {
-    /// Each pod will have a different id
-    pub id: String,
+    /// Each instance will have a different id
+    #[serde(default = "default_id")]
+    id: Option<String>,
 
     /// All deployment pods will have the same name
     pub name: String,
@@ -50,17 +56,29 @@ pub struct Env {
 
     /// The public-facing port that is only useful for gateways
     #[serde(default = "default_public_port")]
-    pub public_port: Option<u16>,
+    public_port: Option<u32>,
 
     /// Internal port for all http interactions
     #[serde(default = "default_private_port")]
-    pub private_port: Option<u16>,
+    private_port: Option<u32>,
 
     #[serde(flatten)]
     pub redis: RedisSettings,
 }
 
 impl Env {
+    pub fn get_id(&self) -> String {
+        self.id.clone().unwrap_or(default_id().unwrap()).to_string()
+    }
+
+    pub fn get_private_port(&self) -> u32 {
+        self.private_port.unwrap_or(default_private_port().unwrap())
+    }
+    
+    pub fn get_public_port(&self) -> u32 {
+        self.public_port.unwrap_or(default_public_port().unwrap())
+    }
+
     pub fn encrypt(&self, data: Vec<u8>) -> RhiaqeyResult<Vec<u8>> {
         if self.public_key.is_none() {
             trace!("no public key was found");

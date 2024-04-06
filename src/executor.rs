@@ -4,7 +4,7 @@ use crate::redis::{connect_and_ping_async, RhiaqeyBufVec};
 use crate::redis_rs::connect_and_ping;
 use crate::security::SecurityKey;
 use crate::stream::StreamMessage;
-use crate::{security, topics, result::RhiaqeyResult};
+use crate::{result::RhiaqeyResult, security, topics};
 use log::{debug, info, trace};
 use redis::Commands;
 use rhiaqey_sdk_rs::channel::{Channel, ChannelList};
@@ -41,19 +41,19 @@ struct PublisherChannel {
 
 impl Executor {
     pub fn get_id(&self) -> String {
-        self.env.id.clone()
+        self.env.get_id()
     }
 
     pub fn get_name(&self) -> String {
         self.env.name.clone()
     }
 
-    pub fn get_public_port(&self) -> u16 {
-        self.env.public_port.unwrap()
+    pub fn get_public_port(&self) -> u32 {
+        self.env.get_public_port()
     }
 
-    pub fn get_private_port(&self) -> u16 {
-        self.env.private_port.unwrap()
+    pub fn get_private_port(&self) -> u32 {
+        self.env.get_private_port()
     }
 
     pub fn get_namespace(&self) -> String {
@@ -221,7 +221,7 @@ impl Executor {
         let mut stream_msg: StreamMessage = message.into();
 
         // if self.is_debug() {
-        stream_msg.publisher_id = Some(self.env.id.clone());
+        stream_msg.publisher_id = Some(self.env.get_id());
         // }
 
         let tag = stream_msg.tag.clone().unwrap_or(String::from(""));
