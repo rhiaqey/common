@@ -70,15 +70,20 @@ impl Executor {
         self.channels.read().await.len()
     }
 
-    fn load_key(config: &Env, client: &mut redis::Connection) -> RhiaqeyResult<SecurityKey> {
+    fn load_key(config: &Env, client: &mut redis::Connection) -> anyhow::Result<SecurityKey> {
         let namespace = config.namespace.clone();
         let security_key = topics::security_key(namespace);
         let security_str: String = client.get(security_key.clone()).unwrap_or(String::from(""));
 
-        let mut security = serde_json::from_str::<SecurityKey>(security_str.as_str())?;
+        let mut security = serde_json::from_str::<SecurityKey>(security_str.as_str())
+            .context("failed to deserialize security key")?;
 
-        security.key = config.decrypt(security.key)?;
-        security.no_once = config.decrypt(security.no_once)?;
+        security.key = config
+            .decrypt(security.key)
+            .context("failed to decrypt key")?;
+        security.no_once = config
+            .decrypt(security.no_once)
+            .context("failed to decrypt no_once")?;
 
         debug!("security keys loaded");
 
