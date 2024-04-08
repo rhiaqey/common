@@ -7,7 +7,7 @@ use rsa::pkcs1::DecodeRsaPublicKey;
 use rsa::{Oaep, RsaPrivateKey, RsaPublicKey};
 use rusty_ulid::generate_ulid_string;
 use serde::Deserialize;
-use std::fs;
+use std::{fs, process};
 
 #[derive(Deserialize, Default, Clone, Debug)]
 pub struct KubernetesEnv {
@@ -28,21 +28,31 @@ fn default_private_port() -> Option<u16> {
     Some(3001)
 }
 
-fn default_id() -> Option<String> {
-    Some(generate_ulid_string())
+fn default_id() -> String {
+    generate_ulid_string()
+}
+
+fn default_name() -> String {
+    format!("process-{}", process::id())
+}
+
+fn default_namespace() -> String {
+    String::from("rhiaqey")
 }
 
 #[derive(Deserialize, Clone, Debug)]
 pub struct Env {
     /// Each instance will have a different id
     #[serde(default = "default_id")]
-    id: Option<String>,
+    id: String,
 
     /// All deployment pods will have the same name
-    pub name: String,
+    #[serde(default = "default_name")]
+    name: String,
 
     /// Namespace of the k8s installation
-    pub namespace: String,
+    #[serde(default = "default_namespace")]
+    namespace: String,
 
     /// Optional. If not set, no encryption will be applied
     pub private_key: Option<String>,
@@ -68,7 +78,15 @@ pub struct Env {
 
 impl Env {
     pub fn get_id(&self) -> String {
-        self.id.clone().unwrap_or(default_id().unwrap()).to_string()
+        self.id.clone()
+    }
+
+    pub fn get_name(&self) -> String {
+        self.name.clone()
+    }
+
+    pub fn get_namespace(&self) -> String {
+        self.namespace.clone()
     }
 
     pub fn get_private_port(&self) -> u16 {

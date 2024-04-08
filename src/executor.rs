@@ -46,7 +46,11 @@ impl Executor {
     }
 
     pub fn get_name(&self) -> String {
-        self.env.name.clone()
+        self.env.get_name()
+    }
+
+    pub fn get_namespace(&self) -> String {
+        self.env.get_namespace()
     }
 
     pub fn get_public_port(&self) -> u16 {
@@ -55,10 +59,6 @@ impl Executor {
 
     pub fn get_private_port(&self) -> u16 {
         self.env.get_private_port()
-    }
-
-    pub fn get_namespace(&self) -> String {
-        self.env.namespace.clone()
     }
 
     pub async fn set_channels_async(&mut self, channels: Vec<Channel>) {
@@ -71,7 +71,7 @@ impl Executor {
     }
 
     fn load_key(config: &Env, client: &mut redis::Connection) -> anyhow::Result<SecurityKey> {
-        let namespace = config.namespace.clone();
+        let namespace = config.get_namespace();
         let security_key = topics::security_key(namespace);
         let security_str: String = client.get(security_key.clone()).unwrap_or(String::from(""));
         if security_str.is_empty() {
@@ -111,7 +111,7 @@ impl Executor {
         trace!("got all channels result {:?}", all_channels);
 
         let publisher_channels_key =
-            topics::publisher_channels_key(self.get_namespace(), self.env.name.clone());
+            topics::publisher_channels_key(self.get_namespace(), self.env.get_name());
 
         let publisher_channels_result: String = client.get(publisher_channels_key).await?;
         trace!("got publisher channels {}", publisher_channels_result);
@@ -195,10 +195,8 @@ impl Executor {
     pub async fn create_hub_to_publishers_pubsub_async(&mut self) -> RhiaqeyResult<PubSubStream> {
         let client = connect_and_ping_async(self.env.redis.clone()).await?;
 
-        let key = topics::hub_to_publisher_pubsub_topic(
-            self.env.namespace.clone(),
-            self.env.name.clone(),
-        );
+        let key =
+            topics::hub_to_publisher_pubsub_topic(self.env.get_namespace(), self.env.get_name());
 
         let stream = client.subscribe(key.clone()).await?;
 
@@ -260,7 +258,7 @@ impl Executor {
             }
 
             let topic = topics::publishers_to_hub_stream_topic(
-                self.env.namespace.clone(),
+                self.env.get_namespace(),
                 channel.name.to_string(),
             );
 
