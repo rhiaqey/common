@@ -1,6 +1,5 @@
-use crate::error::RhiaqeyError;
 use crate::redis::RedisSettings;
-use crate::result::RhiaqeyResult;
+use anyhow::{bail, Context};
 use log::{debug, trace, warn};
 use rsa::pkcs1::DecodeRsaPrivateKey;
 use rsa::pkcs1::DecodeRsaPublicKey;
@@ -97,16 +96,15 @@ impl Env {
         self.public_port.unwrap_or(default_public_port().unwrap())
     }
 
-    pub fn encrypt(&self, data: Vec<u8>) -> RhiaqeyResult<Vec<u8>> {
+    pub fn encrypt(&self, data: Vec<u8>) -> anyhow::Result<Vec<u8>> {
         if self.public_key.is_none() {
             trace!("no public key was found");
             return Ok(data);
         }
 
-        let public_key_optional = self
-            .public_key
-            .as_ref()
-            .ok_or(RhiaqeyError::from("failed to obtain public key"))?;
+        let Some(public_key_optional) = self.public_key.as_ref() else {
+            bail!("failed to obtain public key")
+        };
 
         let mut public_key_result = fs::read_to_string(public_key_optional);
         if let Err(err) = public_key_result {
@@ -115,10 +113,10 @@ impl Env {
             public_key_result = Ok(public_key_optional.clone());
         }
 
-        let public_key = public_key_result?;
+        let public_key = public_key_result.context("fail to read public key")?;
 
-        let rsa_public_key = RsaPublicKey::from_pkcs1_pem(&public_key)
-            .map_err(|x| RhiaqeyError::from(x.to_string()))?;
+        let rsa_public_key =
+            RsaPublicKey::from_pkcs1_pem(&public_key).context("failed to create rsa public key")?;
 
         trace!("RSA public key is ready");
 
@@ -126,23 +124,22 @@ impl Env {
         let padding = Oaep::new::<sha2::Sha256>();
         let enc_data = rsa_public_key
             .encrypt(&mut rng, padding, data.as_slice())
-            .map_err(|x| RhiaqeyError::from(x.to_string()))?;
+            .context("failed to encrypt data")?;
 
         trace!("data encrypted");
 
         Ok(enc_data)
     }
 
-    pub fn decrypt(&self, data: Vec<u8>) -> RhiaqeyResult<Vec<u8>> {
+    pub fn decrypt(&self, data: Vec<u8>) -> anyhow::Result<Vec<u8>> {
         if self.private_key.is_none() {
             trace!("no private key was found");
             return Ok(data);
         }
 
-        let private_key_optional = self
-            .private_key
-            .as_ref()
-            .ok_or(RhiaqeyError::from("failed to obtain private_key key"))?;
+        let Some(private_key_optional) = self.private_key.as_ref() else {
+            bail!("failed to obtain private_key key")
+        };
 
         let mut private_key_result = fs::read_to_string(private_key_optional);
         if let Err(err) = private_key_result {
@@ -151,17 +148,17 @@ impl Env {
             private_key_result = Ok(private_key_optional.to_string());
         }
 
-        let private_key = private_key_result?;
+        let private_key = private_key_result.context("failed to ready private key")?;
 
         let rsa_private_key = RsaPrivateKey::from_pkcs1_pem(&private_key)
-            .map_err(|x| RhiaqeyError::from(x.to_string()))?;
+            .context("failed to create rsa private key")?;
 
         trace!("RSA private key is ready");
 
         let padding = Oaep::new::<sha2::Sha256>();
         let dec_data = rsa_private_key
             .decrypt(padding, data.as_slice())
-            .map_err(|x| RhiaqeyError::from(x.to_string()))?;
+            .context("failed to decrypt data")?;
 
         trace!("data decrypted");
 

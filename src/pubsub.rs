@@ -1,5 +1,5 @@
-use crate::result::RhiaqeyResult;
 use crate::stream::StreamMessage;
+use anyhow::Context;
 use rhiaqey_sdk_rs::channel::Channel;
 use serde::{Deserialize, Serialize};
 
@@ -64,11 +64,11 @@ pub struct RPCMessage {
 }
 
 impl RPCMessage {
-    pub fn ser_to_string(&self) -> RhiaqeyResult<String> {
-        serde_json::to_string(self).map_err(|x| x.into())
+    pub fn ser_to_string(&self) -> anyhow::Result<String> {
+        serde_json::to_string(self).context("failed to serialize")
     }
 
-    pub fn der_from_string(message: &str) -> RhiaqeyResult<RPCMessage> {
-        serde_json::from_str::<RPCMessage>(message).map_err(|x| x.into())
+    pub fn der_from_string(message: &str) -> anyhow::Result<RPCMessage> {
+        serde_json::from_str::<RPCMessage>(message).context("failed to deserialize")
     }
 }

@@ -1,4 +1,4 @@
-use crate::result::RhiaqeyResult;
+use anyhow::Context;
 use rhiaqey_sdk_rs::gateway::GatewayMessage;
 use rhiaqey_sdk_rs::message::MessageValue;
 use rhiaqey_sdk_rs::producer::ProducerMessage;
@@ -65,12 +65,12 @@ pub struct StreamMessage {
 }
 
 impl StreamMessage {
-    pub fn ser_to_string(&self) -> RhiaqeyResult<String> {
-        serde_json::to_string(self).map_err(|x| x.into())
+    pub fn ser_to_string(&self) -> anyhow::Result<String> {
+        serde_json::to_string(self).context("failed to serialize")
     }
 
-    pub fn der_from_string(message: &str) -> RhiaqeyResult<StreamMessage> {
-        serde_json::from_str::<StreamMessage>(message).map_err(|x| x.into())
+    pub fn der_from_string(message: &str) -> anyhow::Result<StreamMessage> {
+        serde_json::from_str::<StreamMessage>(message).context("failed to deserialize")
     }
 }
 

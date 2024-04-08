@@ -5,8 +5,8 @@ use aes_gcm_siv::{
     Aes256GcmSiv,
     Nonce, // Or `Aes128GcmSiv`
 };
+use anyhow::Context;
 
-use crate::result::RhiaqeyResult;
 use rand::distributions::Alphanumeric;
 use rand::Rng;
 
@@ -24,18 +24,26 @@ pub fn generate_nonce() -> Vec<u8> {
     s.into_bytes()
 }
 
-pub fn aes_encrypt(nonce: &[u8], key: &[u8], data: &[u8]) -> RhiaqeyResult<Vec<u8>> {
-    let cipher = Aes256GcmSiv::new_from_slice(key).map_err(|x| x.to_string())?;
-    cipher
+pub fn aes_encrypt(nonce: &[u8], key: &[u8], data: &[u8]) -> anyhow::Result<Vec<u8>> {
+    let cipher =
+        Aes256GcmSiv::new_from_slice(key).context("failed to create aes256gcm from slice")?;
+
+    let result = cipher
         .encrypt(Nonce::from_slice(nonce), data)
-        .map_err(|x| x.to_string().into())
+        .context("failed to encrypt")?;
+
+    Ok(result)
 }
 
-pub fn aes_decrypt(nonce: &[u8], key: &[u8], data: &[u8]) -> RhiaqeyResult<Vec<u8>> {
-    let cipher = Aes256GcmSiv::new_from_slice(key).map_err(|x| x.to_string())?;
-    cipher
+pub fn aes_decrypt(nonce: &[u8], key: &[u8], data: &[u8]) -> anyhow::Result<Vec<u8>> {
+    let cipher =
+        Aes256GcmSiv::new_from_slice(key).context("failed to create aes256gcm from slice")?;
+
+    let result = cipher
         .decrypt(Nonce::from_slice(nonce), data)
-        .map_err(|x| x.to_string().into())
+        .context("failed to decrypt")?;
+
+    Ok(result)
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

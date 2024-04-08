@@ -4,7 +4,7 @@ use crate::redis::{connect_and_ping_async, RhiaqeyBufVec};
 use crate::redis_rs::connect_and_ping;
 use crate::security::SecurityKey;
 use crate::stream::StreamMessage;
-use crate::{result::RhiaqeyResult, security, topics};
+use crate::{security, topics};
 use anyhow::{bail, Context};
 use log::{debug, info, trace};
 use redis::Commands;
@@ -93,7 +93,7 @@ impl Executor {
         Ok(security)
     }
 
-    pub async fn read_channels_async(&self) -> RhiaqeyResult<Vec<Channel>> {
+    pub async fn read_channels_async(&self) -> anyhow::Result<Vec<Channel>> {
         debug!("reading all assigned channels");
 
         // calculate channels key
@@ -103,7 +103,10 @@ impl Executor {
         let client = self.redis.lock().await;
 
         // get all channels in the system
-        let all_channels_result: String = client.get(all_channels_key).await?;
+        let all_channels_result: String = client
+            .get(all_channels_key)
+            .await
+            .context("failed to retrieve all channels")?;
         trace!("got channels {}", all_channels_result);
 
         let all_channels: ChannelList =
@@ -113,7 +116,10 @@ impl Executor {
         let publisher_channels_key =
             topics::publisher_channels_key(self.get_namespace(), self.env.get_name());
 
-        let publisher_channels_result: String = client.get(publisher_channels_key).await?;
+        let publisher_channels_result: String = client
+            .get(publisher_channels_key)
+            .await
+            .context("failed to retrieve publisher's channels")?;
         trace!("got publisher channels {}", publisher_channels_result);
 
         let all_publisher_channels: PublisherChannel =
@@ -139,11 +145,19 @@ impl Executor {
 
     pub async fn read_settings_async<T: DeserializeOwned + Default + Debug>(
         &self,
-    ) -> RhiaqeyResult<T> {
-        let settings_key = topics::publisher_settings_key(self.get_namespace(), self.get_name());
+    ) -> anyhow::Result<T> {
+        info!("reading publisher settings");
 
-        let result: RhiaqeyBufVec = self.redis.lock().await.get(settings_key).await?;
-        debug!("encrypted settings retrieved");
+        let settings_key = topics::publisher_settings_key(self.get_namespace(), self.get_name());
+        let result: RhiaqeyBufVec = self
+            .redis
+            .lock()
+            .await
+            .get(settings_key)
+            .await
+            .context("failed to acquire lock")?;
+
+        trace!("encrypted settings retrieved");
 
         let keys = self.security.lock().await;
 
@@ -151,9 +165,15 @@ impl Executor {
             keys.no_once.as_slice(),
             keys.key.as_slice(),
             result.0.as_slice(),
-        )?;
+        )
+        .context("failed to decrypt settings with key")?;
 
-        let settings = MessageValue::Binary(data).decode::<T>()?;
+        trace!("settings decrypted");
+
+        let settings = MessageValue::Binary(data)
+            .decode::<T>()
+            .context("failed to decode settings")?;
+
         debug!("decrypted data decoded into settings");
 
         Ok(settings)
@@ -162,11 +182,14 @@ impl Executor {
     pub async fn setup(config: Env) -> anyhow::Result<Executor> {
         let redis_rs_client =
             connect_and_ping(&config.redis).context("failed to connect to redis")?;
+
         let mut redis_rs_connection = redis_rs_client
             .get_connection()
             .context("failed to obtain redis connection")?;
+
         let security = Self::load_key(&config, &mut redis_rs_connection)
             .context("failed to load security key")?;
+
         let client = connect_and_ping_async(config.redis.clone())
             .await
             .context("failed to connect asynchronously to redis")?;
@@ -192,24 +215,31 @@ impl Executor {
         serde_json::from_slice::<RPCMessage>(message.payload.as_slice()).ok()
     }
 
-    pub async fn create_hub_to_publishers_pubsub_async(&mut self) -> RhiaqeyResult<PubSubStream> {
-        let client = connect_and_ping_async(self.env.redis.clone()).await?;
+    pub async fn create_hub_to_publishers_pubsub_async(&mut self) -> anyhow::Result<PubSubStream> {
+        let client = connect_and_ping_async(self.env.redis.clone())
+            .await
+            .context("failed to connect to redis")?;
 
         let key =
             topics::hub_to_publisher_pubsub_topic(self.env.get_namespace(), self.env.get_name());
 
-        let stream = client.subscribe(key.clone()).await?;
+        let stream = client
+            .subscribe(key.clone())
+            .await
+            .context("failed to subscribe to topic")?;
 
         Ok(stream)
     }
 
-    pub fn rpc(&self, namespace: String, message: RPCMessage) -> RhiaqeyResult<usize> {
+    pub fn rpc(&self, namespace: String, message: RPCMessage) -> anyhow::Result<usize> {
         info!("broadcasting rpc message to all hubs");
 
         let clean_topic = topics::hub_raw_to_hub_clean_pubsub_topic(namespace);
 
         // Prepare to broadcast to all hubs that we have clean message
-        let raw = message.ser_to_string()?;
+        let raw = message
+            .ser_to_string()
+            .context("failed to serialize to string")?;
 
         let reply: usize = self
             .redis_rs
@@ -231,7 +261,7 @@ impl Executor {
         &self,
         message: impl Into<StreamMessage>,
         options: ExecutorPublishOptions,
-    ) -> RhiaqeyResult<usize> {
+    ) -> anyhow::Result<usize> {
         info!("publishing message to all valid channels");
 
         let mut stream_msg: StreamMessage = message.into();
@@ -275,7 +305,9 @@ impl Executor {
                 options.trim_threshold.unwrap_or(10000),
             ));
 
-            let data = stream_msg.ser_to_string()?;
+            let data = stream_msg
+                .ser_to_string()
+                .context("failed to serialize to string")?;
 
             let id: String = redis
                 .xadd(
@@ -289,7 +321,8 @@ impl Executor {
                     xadd_options,
                     // XAddOptions::default()
                 )
-                .await?;
+                .await
+                .context("failed to xadd to message to stream")?;
 
             debug!(
                 "sent message {} to channel {} in topic {}",

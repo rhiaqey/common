@@ -1,4 +1,4 @@
-use crate::result::RhiaqeyResult;
+use anyhow::{bail, Context};
 use rustis::client::Client;
 use rustis::commands::{ConnectionCommands, PingOptions};
 use rustis::resp::{deserialize_byte_buf, PrimitiveResponse};
@@ -72,7 +72,7 @@ impl RedisSettings {
     }
 }
 
-pub async fn connect_async(settings: RedisSettings) -> RhiaqeyResult<Client> {
+pub async fn connect_async(settings: RedisSettings) -> anyhow::Result<Client> {
     let address = settings.redis_address.unwrap();
 
     let connect_uri = match settings.redis_password {
@@ -82,20 +82,22 @@ pub async fn connect_async(settings: RedisSettings) -> RhiaqeyResult<Client> {
 
     let client = Client::connect(connect_uri)
         .await
-        .map_err(|x| x.to_string())?;
+        .context("failed to connect")?;
     Ok(client)
 }
 
-pub async fn connect_and_ping_async(config: RedisSettings) -> RhiaqeyResult<Client> {
-    let redis_connection = connect_async(config).await?;
+pub async fn connect_and_ping_async(config: RedisSettings) -> anyhow::Result<Client> {
+    let redis_connection = connect_async(config)
+        .await
+        .context("failed to connect async")?;
 
     let result: String = redis_connection
         .clone()
         .ping(PingOptions::default().message("hello"))
-        .await?;
-
+        .await
+        .context("failed to send PING")?;
     if result != "hello" {
-        return Err("ping failed".to_string().into());
+        bail!("ping failed");
     }
 
     Ok(redis_connection)
