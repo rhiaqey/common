@@ -21,15 +21,15 @@ pub fn hub_to_publisher_pubsub_topic<S: AsRef<str>>(namespace: S, publisher_name
 pub fn hub_channel_snapshot_topic<S: AsRef<str>>(
     namespace: S,
     channel: S,
-    key: S,
     category: S,
+    key: S,
 ) -> String {
     format!(
         "{}:hub:channels:{}:snapshot:{}:{}",
         namespace.as_ref(),
         channel.as_ref(),
-        key.as_ref(),
         category.as_ref()
+        key.as_ref(),
     )
 }
 
