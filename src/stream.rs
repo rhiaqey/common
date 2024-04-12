@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum StreamMessageDataType {
-    Data = 0,        // sent data from hub to client
+    Data = 0, // sent data from hub to client
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
@@ -83,11 +83,10 @@ impl From<ProducerMessage> for StreamMessage {
             tag: value.tag,
             category: value.category,
             size: value.size,
-            // stream message only
             channel: String::from(""),
-            client_ids: None,
-            group_ids: None,
-            user_ids: None,
+            user_ids: value.user_ids,
+            client_ids: value.client_ids,
+            group_ids: value.group_ids,
             hub_id: None,
             publisher_id: None,
         }
@@ -104,11 +103,10 @@ impl From<GatewayMessage> for StreamMessage {
             tag: value.tag,
             category: value.category,
             size: value.size,
+            channel: String::from(""),
+            user_ids: value.user_ids,
             client_ids: value.client_ids,
             group_ids: value.group_ids,
-            user_ids: value.user_ids,
-            // stream message only
-            channel: String::from(""),
             hub_id: None,
             publisher_id: None,
         }
