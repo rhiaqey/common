@@ -28,7 +28,7 @@ pub fn hub_channel_snapshot_topic<S: AsRef<str>>(
         "{}:hub:channels:{}:snapshot:{}:{}",
         namespace.as_ref(),
         channel.as_ref(),
-        category.as_ref()
+        category.as_ref(),
         key.as_ref(),
     )
 }
