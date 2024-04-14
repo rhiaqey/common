@@ -2,6 +2,7 @@ use crate::stream::StreamMessage;
 use anyhow::Context;
 use rhiaqey_sdk_rs::channel::Channel;
 use serde::{Deserialize, Serialize};
+use std::fmt::{Display, Formatter};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "PascalCase")]
@@ -61,6 +62,22 @@ pub enum RPCMessageData {
 #[serde(rename_all = "PascalCase")]
 pub struct RPCMessage {
     pub data: RPCMessageData,
+}
+
+impl Display for RPCMessage {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self.data {
+            RPCMessageData::RegisterPublisher(_) => write!(f, "register_publisher"),
+            RPCMessageData::NotifyClients(_) => write!(f, "notify_clients"),
+            RPCMessageData::UpdateHubSettings() => write!(f, "update_hub_settings"),
+            RPCMessageData::UpdatePublisherSettings() => write!(f, "update_publisher_settings"),
+            RPCMessageData::CreateChannels(_) => write!(f, "create_channels"),
+            RPCMessageData::DeleteChannels(_) => write!(f, "delete_channels"),
+            RPCMessageData::PurgeChannels(_) => write!(f, "purge_channels"),
+            RPCMessageData::AssignChannels(_) => write!(f, "assign_channels"),
+            RPCMessageData::Metrics(_) => write!(f, "metrics"),
+        }
+    }
 }
 
 impl RPCMessage {

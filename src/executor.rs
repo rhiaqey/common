@@ -232,7 +232,11 @@ impl Executor {
     }
 
     pub fn rpc(&self, namespace: String, message: RPCMessage) -> anyhow::Result<usize> {
-        info!("broadcasting rpc message to all hubs");
+        info!(
+            "broadcasting rpc message[namespace={}, kind={}] to all hubs",
+            namespace,
+            message.to_string()
+        );
 
         let clean_topic = topics::hub_raw_to_hub_clean_pubsub_topic(namespace);
 
