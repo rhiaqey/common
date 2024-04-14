@@ -46,10 +46,6 @@ pub struct StreamMessage {
     #[serde(rename = "cid", skip_serializing_if = "Option::is_none")]
     pub client_ids: Option<Vec<String>>,
 
-    // target specific group ids
-    #[serde(rename = "gid", skip_serializing_if = "Option::is_none")]
-    pub group_ids: Option<Vec<String>>,
-
     // target specific user ids
     #[serde(rename = "uid", skip_serializing_if = "Option::is_none")]
     pub user_ids: Option<Vec<String>>,
@@ -86,7 +82,6 @@ impl From<ProducerMessage> for StreamMessage {
             channel: String::from(""),
             user_ids: value.user_ids,
             client_ids: value.client_ids,
-            group_ids: value.group_ids,
             hub_id: None,
             publisher_id: None,
         }
@@ -106,7 +101,6 @@ impl From<GatewayMessage> for StreamMessage {
             channel: String::from(""),
             user_ids: value.user_ids,
             client_ids: value.client_ids,
-            group_ids: value.group_ids,
             hub_id: None,
             publisher_id: None,
         }
