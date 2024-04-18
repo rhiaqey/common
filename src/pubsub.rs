@@ -39,6 +39,7 @@ pub struct MetricsMessage {
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "PascalCase")]
 pub enum RPCMessageData {
+    // this comes from publishers to hub
     RegisterPublisher(PublisherRegistrationMessage),
     // this comes from hub raw to hub clean
     NotifyClients(StreamMessage),
