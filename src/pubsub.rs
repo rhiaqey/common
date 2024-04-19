@@ -38,6 +38,32 @@ pub struct MetricsMessage {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "PascalCase")]
+pub struct ClientConnectedMessage {
+    /// Client id
+    pub client_id: String,
+
+    /// User id
+    pub user_id: Option<String>,
+
+    /// Connected channels
+    pub channels: Vec<(Channel, Option<String>)>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "PascalCase")]
+pub struct ClientDisconnectedMessage {
+    /// Client id
+    pub client_id: String,
+
+    /// User id
+    pub user_id: Option<String>,
+
+    /// Connected channels
+    pub channels: Vec<(Channel, Option<String>)>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "PascalCase")]
 pub enum RPCMessageData {
     // this comes from publishers to hub
     RegisterPublisher(PublisherRegistrationMessage),
@@ -57,6 +83,10 @@ pub enum RPCMessageData {
     AssignChannels(Vec<Channel>),
     // this goes from publishers to hub
     Metrics(MetricsMessage),
+    // this goes from hub to eventbus
+    ClientConnected(ClientConnectedMessage),
+    // this goes from hub to eventbus
+    ClientDisconnected(ClientDisconnectedMessage),
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -77,6 +107,8 @@ impl Display for RPCMessage {
             RPCMessageData::PurgeChannels(_) => write!(f, "purge_channels"),
             RPCMessageData::AssignChannels(_) => write!(f, "assign_channels"),
             RPCMessageData::Metrics(_) => write!(f, "metrics"),
+            RPCMessageData::ClientConnected(_) => write!(f, "client_connected"),
+            RPCMessageData::ClientDisconnected(_) => write!(f, "client_disconnected"),
         }
     }
 }

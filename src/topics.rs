@@ -6,6 +6,10 @@ pub fn publishers_to_hub_stream_topic<S: AsRef<str>>(namespace: S, channel: S) -
     )
 }
 
+pub fn events_pubsub_topic<S: AsRef<str>>(namespace: S) -> String {
+    format!("{}:hub:streams:pubsub:events", namespace.as_ref(),)
+}
+
 pub fn hub_raw_to_hub_clean_pubsub_topic<S: AsRef<str>>(namespace: S) -> String {
     format!("{}:hub:streams:pubsub:clean", namespace.as_ref())
 }
