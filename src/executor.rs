@@ -143,7 +143,7 @@ impl Executor {
         Ok(channels)
     }
 
-    pub async fn read_settings_async<T: DeserializeOwned + Default + Debug>(
+    pub async fn read_settings_async<T: DeserializeOwned + Default>(
         &self,
     ) -> anyhow::Result<T> {
         info!("reading publisher settings");
