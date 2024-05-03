@@ -143,9 +143,9 @@ impl Executor {
         Ok(channels)
     }
 
-    pub async fn read_settings_async<T: DeserializeOwned + Default>(
+    pub async fn read_settings_async<S: DeserializeOwned + Default>(
         &self,
-    ) -> anyhow::Result<T> {
+    ) -> anyhow::Result<S> {
         info!("reading publisher settings");
 
         let settings_key = topics::publisher_settings_key(self.get_namespace(), self.get_name());
@@ -171,7 +171,7 @@ impl Executor {
         trace!("settings decrypted");
 
         let settings = MessageValue::Binary(data)
-            .decode::<T>()
+            .decode::<S>()
             .context("failed to decode settings")?;
 
         debug!("decrypted data decoded into settings");
