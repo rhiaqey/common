@@ -83,10 +83,11 @@ impl Executor {
 
         security.key = config
             .decrypt(security.key)
-            .context("failed to decrypt key")?;
+            .context("failed to decrypt security key")?;
+
         security.no_once = config
             .decrypt(security.no_once)
-            .context("failed to decrypt no_once")?;
+            .context("failed to decrypt security no_once")?;
 
         debug!("security keys loaded");
 

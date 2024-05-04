@@ -97,9 +97,10 @@ impl Env {
     }
 
     pub fn encrypt(&self, data: Vec<u8>) -> anyhow::Result<Vec<u8>> {
+        trace!("encrypting data with public key: {}", self.public_key.is_some());
+
         if self.public_key.is_none() {
-            trace!("no public key was found");
-            return Ok(data);
+            bail!("no public key was found");
         }
 
         let Some(public_key_optional) = self.public_key.as_ref() else {
@@ -109,7 +110,7 @@ impl Env {
         let mut public_key_result = fs::read_to_string(public_key_optional);
         if let Err(err) = public_key_result {
             warn!("public key read from path error {err}");
-            debug!("setting public key from env");
+            warn!("setting public key from env");
             public_key_result = Ok(public_key_optional.clone());
         }
 
@@ -132,13 +133,14 @@ impl Env {
     }
 
     pub fn decrypt(&self, data: Vec<u8>) -> anyhow::Result<Vec<u8>> {
+        trace!("decrypting data with private key: {}", self.private_key.is_some());
+
         if self.private_key.is_none() {
-            trace!("no private key was found");
-            return Ok(data);
+            bail!("no private key was found");
         }
 
         let Some(private_key_optional) = self.private_key.as_ref() else {
-            bail!("failed to obtain private_key key")
+            bail!("failed to obtain private_key key");
         };
 
         let mut private_key_result = fs::read_to_string(private_key_optional);
