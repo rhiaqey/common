@@ -109,7 +109,7 @@ impl Env {
 
         let mut public_key_result = fs::read_to_string(public_key_optional);
         if let Err(err) = public_key_result {
-            warn!("public key read from path[{public_key_optional}] error: {err}");
+            warn!("public key read from path error: {err}");
             warn!("setting public key from env");
             public_key_result = Ok(public_key_optional.clone());
         }
@@ -145,7 +145,7 @@ impl Env {
 
         let mut private_key_result = fs::read_to_string(private_key_optional);
         if let Err(err) = private_key_result {
-            warn!("private key read from path[{private_key_optional}] error: {err}");
+            warn!("private key read from path error: {err}");
             debug!("setting private key from env");
             private_key_result = Ok(private_key_optional.to_string());
         }
