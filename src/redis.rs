@@ -82,20 +82,20 @@ pub async fn connect_async(settings: RedisSettings) -> anyhow::Result<Client> {
 
     let client = Client::connect(connect_uri)
         .await
-        .context("failed to connect")?;
+        .context("failed to connect async to redis")?;
     Ok(client)
 }
 
 pub async fn connect_and_ping_async(config: RedisSettings) -> anyhow::Result<Client> {
     let redis_connection = connect_async(config)
         .await
-        .context("failed to connect async")?;
+        .context("failed to connect async to redis")?;
 
     let result: String = redis_connection
         .clone()
         .ping(PingOptions::default().message("hello"))
         .await
-        .context("failed to send PING")?;
+        .context("failed to send PING to redis")?;
     if result != "hello" {
         bail!("ping failed");
     }

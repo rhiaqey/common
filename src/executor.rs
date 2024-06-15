@@ -144,9 +144,7 @@ impl Executor {
         Ok(channels)
     }
 
-    pub async fn read_settings_async<S: DeserializeOwned + Default>(
-        &self,
-    ) -> anyhow::Result<S> {
+    pub async fn read_settings_async<S: DeserializeOwned + Default>(&self) -> anyhow::Result<S> {
         info!("reading publisher settings");
 
         let settings_key = topics::publisher_settings_key(self.get_namespace(), self.get_name());
@@ -219,7 +217,7 @@ impl Executor {
     pub async fn create_hub_to_publishers_pubsub_async(&mut self) -> anyhow::Result<PubSubStream> {
         let client = connect_and_ping_async(self.env.redis.clone())
             .await
-            .context("failed to connect to redis")?;
+            .context("failed to connect and ping async to redis")?;
 
         let key =
             topics::hub_to_publisher_pubsub_topic(self.env.get_namespace(), self.env.get_name());
