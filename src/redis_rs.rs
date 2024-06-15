@@ -56,7 +56,7 @@ pub fn connect(settings: &RedisSettings) -> anyhow::Result<Client> {
 }
 
 pub fn connect_and_ping(settings: &RedisSettings) -> anyhow::Result<Client> {
-    let client = connect(settings).context("failed to connect")?;
+    let client = connect(settings).context("failed to connect to redis")?;
 
     let mut connection = client
         .get_connection()

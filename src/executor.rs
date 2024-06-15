@@ -180,7 +180,7 @@ impl Executor {
 
     pub async fn setup(config: Env) -> anyhow::Result<Executor> {
         let redis_rs_client =
-            connect_and_ping(&config.redis).context("failed to connect to redis")?;
+            connect_and_ping(&config.redis).context("failed to connect and ping redis")?;
 
         let mut redis_rs_connection = redis_rs_client
             .get_connection()
@@ -191,7 +191,7 @@ impl Executor {
 
         let client = connect_and_ping_async(config.redis.clone())
             .await
-            .context("failed to connect asynchronously to redis")?;
+            .context("failed to connect and ping async to redis")?;
 
         let mut executor = Executor {
             env: Arc::from(config),
