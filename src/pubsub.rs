@@ -46,7 +46,7 @@ pub struct ClientConnectedMessage {
     pub user_id: Option<String>,
 
     /// Connected channels
-    pub channels: Vec<(Channel, Option<String>)>,
+    pub channels: Vec<(Channel, Option<String>, Option<String>)>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -59,7 +59,7 @@ pub struct ClientDisconnectedMessage {
     pub user_id: Option<String>,
 
     /// Connected channels
-    pub channels: Vec<(Channel, Option<String>)>,
+    pub channels: Vec<(Channel, Option<String>, Option<String>)>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
