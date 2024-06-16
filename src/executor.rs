@@ -305,7 +305,7 @@ impl Executor {
             let xadd_options = XAddOptions::default().trim_options(XTrimOptions::max_len(
                 XTrimOperator::Approximately,
                 // channel.size as i64,
-                options.trim_threshold.unwrap_or(10000),
+                options.trim_threshold.unwrap_or(1000),
             ));
 
             let data = stream_msg
