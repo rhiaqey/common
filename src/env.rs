@@ -100,7 +100,10 @@ impl Env {
     }
 
     pub fn encrypt(&self, data: Vec<u8>) -> anyhow::Result<Vec<u8>> {
-        trace!("encrypting data: should ship {}", self.xxx_skip_security);
+        trace!(
+            "encrypting data: should skip flag set to {}",
+            self.xxx_skip_security
+        );
 
         if self.xxx_skip_security {
             return Ok(data);
@@ -140,7 +143,10 @@ impl Env {
     }
 
     pub fn decrypt(&self, data: Vec<u8>) -> anyhow::Result<Vec<u8>> {
-        trace!("decrypting data: should ship {}", self.xxx_skip_security);
+        trace!(
+            "decrypting data: should skip flag set to {}",
+            self.xxx_skip_security
+        );
 
         if self.xxx_skip_security {
             return Ok(data);
