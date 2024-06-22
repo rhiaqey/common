@@ -95,6 +95,10 @@ impl Env {
         self.private_port.unwrap_or(default_private_port().unwrap())
     }
 
+    pub fn xxx_should_skip_security(&self) -> bool {
+        self.xxx_skip_security
+    }
+
     pub fn get_public_port(&self) -> u16 {
         self.public_port.unwrap_or(default_public_port().unwrap())
     }
