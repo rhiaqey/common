@@ -32,7 +32,7 @@ fn default_id() -> String {
 }
 
 fn default_name() -> String {
-    format!("process-{}", process::id())
+    format!("rhiaqey-process-{}", process::id())
 }
 
 fn default_namespace() -> String {
@@ -97,7 +97,10 @@ impl Env {
     }
 
     pub fn encrypt(&self, data: Vec<u8>) -> anyhow::Result<Vec<u8>> {
-        trace!("encrypting data with public key: {}", self.public_key.is_some());
+        trace!(
+            "encrypting data with public key: {}",
+            self.public_key.is_some()
+        );
 
         if self.public_key.is_none() {
             bail!("no public key was found");
@@ -133,7 +136,10 @@ impl Env {
     }
 
     pub fn decrypt(&self, data: Vec<u8>) -> anyhow::Result<Vec<u8>> {
-        trace!("decrypting data with private key: {}", self.private_key.is_some());
+        trace!(
+            "decrypting data with private key: {}",
+            self.private_key.is_some()
+        );
 
         if self.private_key.is_none() {
             bail!("no private key was found");
