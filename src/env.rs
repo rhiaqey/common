@@ -59,6 +59,9 @@ pub struct Env {
     /// Optional. If not set, no decryption will be possible
     public_key: Option<String>,
 
+    #[serde(default)]
+    xxx_skip_security: bool,
+
     /// Optional since k8s is not required
     // #[serde(flatten)]
     // k8s: Option<KubernetesEnv>,
@@ -97,10 +100,11 @@ impl Env {
     }
 
     pub fn encrypt(&self, data: Vec<u8>) -> anyhow::Result<Vec<u8>> {
-        trace!(
-            "encrypting data with public key: {}",
-            self.public_key.is_some()
-        );
+        trace!("encrypting data: should ship {}", self.xxx_skip_security);
+
+        if self.xxx_skip_security {
+            return Ok(data);
+        }
 
         if self.public_key.is_none() {
             bail!("no public key was found");
@@ -136,10 +140,11 @@ impl Env {
     }
 
     pub fn decrypt(&self, data: Vec<u8>) -> anyhow::Result<Vec<u8>> {
-        trace!(
-            "decrypting data with private key: {}",
-            self.private_key.is_some()
-        );
+        trace!("decrypting data: should ship {}", self.xxx_skip_security);
+
+        if self.xxx_skip_security {
+            return Ok(data);
+        }
 
         if self.private_key.is_none() {
             bail!("no private key was found");
