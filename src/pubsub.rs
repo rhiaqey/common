@@ -2,7 +2,7 @@ use crate::stream::StreamMessage;
 use anyhow::Context;
 use rhiaqey_sdk_rs::channel::Channel;
 use serde::{Deserialize, Serialize};
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "PascalCase")]
@@ -89,15 +89,9 @@ pub enum RPCMessageData {
     ClientDisconnected(ClientDisconnectedMessage),
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(rename_all = "PascalCase")]
-pub struct RPCMessage {
-    pub data: RPCMessageData,
-}
-
-impl Display for RPCMessage {
+impl Display for RPCMessageData {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self.data {
+        match self {
             RPCMessageData::RegisterPublisher(_) => write!(f, "register_publisher"),
             RPCMessageData::NotifyClients(_) => write!(f, "notify_clients"),
             RPCMessageData::UpdateHubSettings() => write!(f, "update_hub_settings"),
@@ -113,6 +107,18 @@ impl Display for RPCMessage {
     }
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "PascalCase")]
+pub struct RPCMessage {
+    pub data: RPCMessageData,
+}
+
+impl Display for RPCMessage {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.data)
+    }
+}
+
 impl RPCMessage {
     pub fn ser_to_string(&self) -> anyhow::Result<String> {
         serde_json::to_string(self).context("failed to serialize")
@@ -120,5 +126,23 @@ impl RPCMessage {
 
     pub fn der_from_string(message: &str) -> anyhow::Result<RPCMessage> {
         serde_json::from_str::<RPCMessage>(message).context("failed to deserialize")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::pubsub::{RPCMessage, RPCMessageData};
+
+    #[test]
+    fn rpc_message_can_be_displayed() {
+        let data = RPCMessageData::UpdateHubSettings();
+        let rpc_message = RPCMessage { data };
+        assert_eq!(rpc_message.to_string(), "update_hub_settings")
+    }
+
+    #[test]
+    fn rpc_message_data_can_be_displayed() {
+        let data = RPCMessageData::UpdateHubSettings();
+        assert_eq!(data.to_string(), "update_hub_settings")
     }
 }
