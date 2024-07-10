@@ -39,6 +39,10 @@ fn default_namespace() -> String {
     String::from("rhiaqey")
 }
 
+fn default_organization() -> String {
+    String::from("rhiaqey")
+}
+
 #[derive(Deserialize, Clone, Debug)]
 pub struct Env {
     /// Each instance will have a different id
@@ -49,18 +53,19 @@ pub struct Env {
     #[serde(default = "default_name")]
     name: String,
 
-    /// Namespace of the k8s installation
+    /// Namespace
     #[serde(default = "default_namespace")]
     namespace: String,
+
+    /// Organization
+    #[serde(default = "default_organization")]
+    organization: String,
 
     /// Optional. If not set, no encryption will be applied
     private_key: Option<String>,
 
     /// Optional. If not set, no decryption will be possible
     public_key: Option<String>,
-
-    #[serde(default)]
-    xxx_skip_security: bool,
 
     /// Optional since k8s is not required
     // #[serde(flatten)]
@@ -91,12 +96,12 @@ impl Env {
         self.namespace.clone()
     }
 
-    pub fn get_private_port(&self) -> u16 {
-        self.private_port.unwrap_or(default_private_port().unwrap())
+    pub fn get_organization(&self) -> &str {
+        &self.organization
     }
 
-    pub fn xxx_should_skip_security(&self) -> bool {
-        self.xxx_skip_security
+    pub fn get_private_port(&self) -> u16 {
+        self.private_port.unwrap_or(default_private_port().unwrap())
     }
 
     pub fn get_public_port(&self) -> u16 {
@@ -104,15 +109,6 @@ impl Env {
     }
 
     pub fn encrypt(&self, data: Vec<u8>) -> anyhow::Result<Vec<u8>> {
-        trace!(
-            "encrypting data: should skip flag set to {}",
-            self.xxx_skip_security
-        );
-
-        if self.xxx_skip_security {
-            return Ok(data);
-        }
-
         if self.public_key.is_none() {
             bail!("no public key was found");
         }
@@ -147,15 +143,6 @@ impl Env {
     }
 
     pub fn decrypt(&self, data: Vec<u8>) -> anyhow::Result<Vec<u8>> {
-        trace!(
-            "decrypting data: should skip flag set to {}",
-            self.xxx_skip_security
-        );
-
-        if self.xxx_skip_security {
-            return Ok(data);
-        }
-
         if self.private_key.is_none() {
             bail!("no private key was found");
         }
