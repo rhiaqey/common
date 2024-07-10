@@ -53,6 +53,8 @@ impl Executor {
         self.env.get_namespace()
     }
 
+    pub fn get_organization(&self) -> &str { self.env.get_organization() }
+    
     pub fn get_public_port(&self) -> u16 {
         self.env.get_public_port()
     }
