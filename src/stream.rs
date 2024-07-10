@@ -71,7 +71,7 @@ impl StreamMessage {
 
 impl From<ProducerMessage> for StreamMessage {
     fn from(value: ProducerMessage) -> Self {
-        StreamMessage {
+        Self {
             data_type: StreamMessageDataType::Data as u8,
             key: value.key,
             value: value.value,
@@ -90,7 +90,7 @@ impl From<ProducerMessage> for StreamMessage {
 
 impl From<GatewayMessage> for StreamMessage {
     fn from(value: GatewayMessage) -> Self {
-        StreamMessage {
+        Self {
             data_type: StreamMessageDataType::Data as u8,
             key: value.key,
             value: value.value,

@@ -22,22 +22,6 @@ pub struct PublisherRegistrationMessage {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "PascalCase")]
-pub struct MetricsMessage {
-    /// Each pod will have a different id
-    pub id: String,
-
-    /// All deployment pods will have the same name
-    pub name: String,
-
-    /// Namespace of the k8s installation
-    pub namespace: String,
-
-    /// Each component must provide metrics
-    pub metrics: serde_json::Value,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(rename_all = "PascalCase")]
 pub struct ClientConnectedMessage {
     /// Client id
     pub client_id: String,
@@ -81,8 +65,6 @@ pub enum RPCMessageData {
     PurgeChannels(Vec<String>),
     // this goes from hub to all publishers
     AssignChannels(Vec<Channel>),
-    // this goes from publishers to hub
-    Metrics(MetricsMessage),
     // this goes from hub to eventbus
     ClientConnected(ClientConnectedMessage),
     // this goes from hub to eventbus
@@ -100,7 +82,6 @@ impl Display for RPCMessageData {
             RPCMessageData::DeleteChannels(_) => write!(f, "delete_channels"),
             RPCMessageData::PurgeChannels(_) => write!(f, "purge_channels"),
             RPCMessageData::AssignChannels(_) => write!(f, "assign_channels"),
-            RPCMessageData::Metrics(_) => write!(f, "metrics"),
             RPCMessageData::ClientConnected(_) => write!(f, "client_connected"),
             RPCMessageData::ClientDisconnected(_) => write!(f, "client_disconnected"),
         }
