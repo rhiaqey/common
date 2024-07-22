@@ -84,26 +84,32 @@ pub struct Env {
 }
 
 impl Env {
-    pub fn get_id(&self) -> String {
-        self.id.clone()
+    #[inline]
+    pub fn get_id(&self) -> &str {
+        &self.id
     }
 
-    pub fn get_name(&self) -> String {
-        self.name.clone()
+    #[inline]
+    pub fn get_name(&self) -> &str {
+        &self.name
     }
 
-    pub fn get_namespace(&self) -> String {
-        self.namespace.clone()
+    #[inline]
+    pub fn get_namespace(&self) -> &str {
+        &self.namespace
     }
 
+    #[inline]
     pub fn get_organization(&self) -> &str {
         &self.organization
     }
 
+    #[inline]
     pub fn get_private_port(&self) -> u16 {
         self.private_port.unwrap_or(default_private_port().unwrap())
     }
 
+    #[inline]
     pub fn get_public_port(&self) -> u16 {
         self.public_port.unwrap_or(default_public_port().unwrap())
     }

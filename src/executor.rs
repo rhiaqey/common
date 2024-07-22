@@ -41,24 +41,32 @@ struct PublisherChannel {
 }
 
 impl Executor {
-    pub fn get_id(&self) -> String {
+    #[inline]
+    pub fn get_id(&self) -> &str {
         self.env.get_id()
     }
 
-    pub fn get_name(&self) -> String {
+    #[inline]
+    pub fn get_name(&self) -> &str {
         self.env.get_name()
     }
 
-    pub fn get_namespace(&self) -> String {
+    #[inline]
+    pub fn get_namespace(&self) -> &str {
         self.env.get_namespace()
     }
 
-    pub fn get_organization(&self) -> &str { self.env.get_organization() }
-    
+    #[inline]
+    pub fn get_organization(&self) -> &str {
+        self.env.get_organization()
+    }
+
+    #[inline]
     pub fn get_public_port(&self) -> u16 {
         self.env.get_public_port()
     }
 
+    #[inline]
     pub fn get_private_port(&self) -> u16 {
         self.env.get_private_port()
     }
@@ -73,8 +81,7 @@ impl Executor {
     }
 
     fn load_key(config: &Env, client: &mut redis::Connection) -> anyhow::Result<SecurityKey> {
-        let namespace = config.get_namespace();
-        let security_key = topics::security_key(namespace);
+        let security_key = topics::security_key(config.get_namespace());
         let security_str: String = client.get(security_key.clone()).unwrap_or(String::from(""));
         if security_str.is_empty() {
             bail!("security key is missing from database");
@@ -117,7 +124,7 @@ impl Executor {
         trace!("got all channels result {:?}", all_channels);
 
         let publisher_channels_key =
-            topics::publisher_channels_key(self.get_namespace(), self.env.get_name());
+            topics::publisher_channels_key(self.get_namespace(), self.get_name());
 
         let publisher_channels_result: String = client
             .get(publisher_channels_key)
@@ -127,7 +134,7 @@ impl Executor {
 
         let all_publisher_channels: PublisherChannel =
             serde_json::from_str(publisher_channels_result.as_str()).unwrap_or(PublisherChannel {
-                name: self.get_name(),
+                name: self.get_name().to_string(),
                 channels: vec![],
             });
         trace!(
@@ -221,8 +228,7 @@ impl Executor {
             .await
             .context("failed to connect and ping async to redis")?;
 
-        let key =
-            topics::hub_to_publisher_pubsub_topic(self.env.get_namespace(), self.env.get_name());
+        let key = topics::hub_to_publisher_pubsub_topic(self.get_namespace(), self.get_name());
 
         let stream = client
             .subscribe(key.clone())
@@ -232,7 +238,7 @@ impl Executor {
         Ok(stream)
     }
 
-    pub fn rpc(&self, namespace: String, message: RPCMessage) -> anyhow::Result<usize> {
+    pub fn rpc(&self, namespace: &String, message: RPCMessage) -> anyhow::Result<usize> {
         info!(
             "broadcasting rpc message[namespace={}, kind={}] to all hubs",
             namespace,
@@ -272,7 +278,7 @@ impl Executor {
         let mut stream_msg: StreamMessage = message.into();
 
         // if self.is_debug() {
-        stream_msg.publisher_id = Some(self.env.get_id());
+        stream_msg.publisher_id = Some(self.get_id().to_string());
         // }
 
         let tag = stream_msg.tag.clone().unwrap_or(String::from(""));
@@ -292,10 +298,8 @@ impl Executor {
                 stream_msg.size = Some(channel.size);
             }
 
-            let topic = topics::publishers_to_hub_stream_topic(
-                self.env.get_namespace(),
-                channel.name.to_string(),
-            );
+            let topic =
+                topics::publishers_to_hub_stream_topic(self.get_namespace(), channel.name.as_str());
 
             info!(
                 "publishing message channel={}, max_len={}, topic={}, timestamp={:?}",
