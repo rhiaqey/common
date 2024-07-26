@@ -2,7 +2,7 @@ use crate::redis::RedisMode;
 use crate::redis::RedisSettings;
 use anyhow::{bail, Context};
 use redis::sentinel::{Sentinel, SentinelNodeConnectionInfo};
-use redis::{Client, RedisConnectionInfo};
+use redis::{Client, ProtocolVersion, RedisConnectionInfo};
 
 pub fn connect(settings: &RedisSettings) -> anyhow::Result<Client> {
     let client = match settings.redis_mode {
@@ -43,6 +43,7 @@ pub fn connect(settings: &RedisSettings) -> anyhow::Result<Client> {
                         db: db as i64,
                         username: None,
                         password: settings.get_password(),
+                        protocol: ProtocolVersion::RESP3,
                     }),
                 }),
             )
