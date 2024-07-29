@@ -281,7 +281,10 @@ impl Executor {
         stream_msg.publisher_id = Some(self.get_id().to_string());
         // }
 
+        let key = stream_msg.key.clone();
+        let tms = stream_msg.timestamp.unwrap_or(0);
         let tag = stream_msg.tag.clone().unwrap_or(String::from(""));
+        let category = stream_msg.category.clone().unwrap_or(String::from(""));
 
         let redis = self.redis.lock().await;
         let channels = self.channels.read().await;
@@ -302,21 +305,19 @@ impl Executor {
                 topics::publishers_to_hub_stream_topic(self.get_namespace(), channel.name.as_str());
 
             info!(
-                "publishing message channel={}, max_len={}, topic={}, timestamp={:?}",
-                channel.name, channel.size, topic, stream_msg.timestamp,
+                "publishing message to channel={}, max_len={}, topic={}, key={}, category={}, timestamp={:?}",
+                channel.name, channel.size, topic, key, category, stream_msg.timestamp,
             );
 
-            let tms = stream_msg.timestamp.unwrap_or(0);
+            let data = stream_msg
+                .ser_to_string()
+                .context("failed to serialize to string")?;
 
             let xadd_options = XAddOptions::default().trim_options(XTrimOptions::max_len(
                 XTrimOperator::Approximately,
                 // channel.size as i64,
                 options.trim_threshold.unwrap_or(1000),
             ));
-
-            let data = stream_msg
-                .ser_to_string()
-                .context("failed to serialize to string")?;
 
             let id: String = redis
                 .xadd(
