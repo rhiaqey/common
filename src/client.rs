@@ -1,4 +1,5 @@
 use crate::stream::StreamMessage;
+use anyhow::Context;
 use rhiaqey_sdk_rs::channel::Channel;
 use rhiaqey_sdk_rs::message::MessageValue;
 use serde::{Deserialize, Serialize};
@@ -88,6 +89,16 @@ impl From<&StreamMessage> for ClientMessage {
             hub_id: value.hub_id.clone(),
             publisher_id: value.publisher_id.clone(),
         }
+    }
+}
+
+impl ClientMessage {
+    pub fn ser_to_string(&self) -> anyhow::Result<String> {
+        serde_json::to_string(self).context("failed to serialize to string")
+    }
+
+    pub fn ser_to_binary(&self) -> anyhow::Result<Vec<u8>> {
+        rmp_serde::to_vec_named(self).context("failed to serialize to binary")
     }
 }
 

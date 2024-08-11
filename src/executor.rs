@@ -273,7 +273,7 @@ impl Executor {
         message: impl Into<StreamMessage>,
         options: ExecutorPublishOptions,
     ) -> anyhow::Result<usize> {
-        info!("publishing message to all valid channels");
+        info!("publishing message async to all valid channels");
 
         let mut stream_msg: StreamMessage = message.into();
 
@@ -293,6 +293,8 @@ impl Executor {
         if channel_size == 0 {
             return Ok(0);
         }
+
+        info!("publishing message to {channel_size} channel(s)");
 
         for channel in channels.iter() {
             stream_msg.channel = channel.name.to_string();
