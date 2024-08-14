@@ -93,12 +93,12 @@ impl From<&StreamMessage> for ClientMessage {
 }
 
 impl ClientMessage {
-    pub fn ser_to_string(&self) -> anyhow::Result<String> {
-        serde_json::to_string(self).context("failed to serialize to string")
+    pub fn ser_to_json(&self) -> anyhow::Result<Vec<u8>> {
+        serde_json::to_vec(self).context("failed to serialize to json")
     }
 
-    pub fn ser_to_binary(&self) -> anyhow::Result<Vec<u8>> {
-        rmp_serde::to_vec_named(self).context("failed to serialize to binary")
+    pub fn ser_to_msgpack(&self) -> anyhow::Result<Vec<u8>> {
+        rmp_serde::to_vec_named(self).context("failed to serialize to msgpack")
     }
 }
 

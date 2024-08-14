@@ -4,13 +4,23 @@
     "dictionaryDefinitions": [],
     "dictionaries": [],
     "words": [
-        "rhiaqey",
+        "Anson",
+        "azurecr",
+        "azuretools",
+        "devcontainer",
+        "devcontainers",
+        "devwasm",
+        "jungaretti",
         "mymaster",
-        "reqwest",
-        "rustis",
-        "pkcs1",
         "oaep",
-        "xadd"
+        "pkcs1",
+        "protoc",
+        "reqwest",
+        "rhiaqey",
+        "rustc",
+        "rustis",
+        "xadd",
+        "msgpack"
     ],
     "ignoreWords": [],
     "import": []
