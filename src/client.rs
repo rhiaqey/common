@@ -97,6 +97,10 @@ impl ClientMessage {
         serde_json::to_vec(self).context("failed to serialize to json")
     }
 
+    pub fn ser_to_json_str(&self) -> anyhow::Result<String> {
+        serde_json::to_string(self).context("failed to serialize to json string")
+    }
+
     pub fn ser_to_msgpack(&self) -> anyhow::Result<Vec<u8>> {
         rmp_serde::to_vec_named(self).context("failed to serialize to msgpack")
     }
