@@ -53,6 +53,10 @@ pub fn hub_settings_key<S: AsRef<str>>(namespace: S) -> String {
     format!("{}:hub:settings", namespace.as_ref())
 }
 
+pub fn hub_schema_key<S: AsRef<str>>(namespace: S) -> String {
+    format!("{}:hub:schema", namespace.as_ref())
+}
+
 pub fn publisher_settings_key<S: AsRef<str>>(namespace: S, publisher_name: S) -> String {
     format!(
         "{}:publishers:{}:settings",
