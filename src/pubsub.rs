@@ -54,9 +54,9 @@ pub enum RPCMessageData {
     // this comes from hub raw to hub clean
     NotifyClients(StreamMessage),
     // this goes from hub to hub to notify them all to reload
-    UpdateHubSettings(),
+    UpdateHubSettings(Vec<u8>),
     // this goes from hub to publishers
-    UpdatePublisherSettings(),
+    UpdatePublisherSettings(Vec<u8>),
     // create channels from http admin
     CreateChannels(Vec<Channel>),
     // delete channels from http admin
@@ -76,8 +76,8 @@ impl Display for RPCMessageData {
         match self {
             RPCMessageData::RegisterPublisher(_) => write!(f, "register_publisher"),
             RPCMessageData::NotifyClients(_) => write!(f, "notify_clients"),
-            RPCMessageData::UpdateHubSettings() => write!(f, "update_hub_settings"),
-            RPCMessageData::UpdatePublisherSettings() => write!(f, "update_publisher_settings"),
+            RPCMessageData::UpdateHubSettings(_) => write!(f, "update_hub_settings"),
+            RPCMessageData::UpdatePublisherSettings(_) => write!(f, "update_publisher_settings"),
             RPCMessageData::CreateChannels(_) => write!(f, "create_channels"),
             RPCMessageData::DeleteChannels(_) => write!(f, "delete_channels"),
             RPCMessageData::PurgeChannels(_) => write!(f, "purge_channels"),
@@ -116,14 +116,14 @@ mod tests {
 
     #[test]
     fn rpc_message_can_be_displayed() {
-        let data = RPCMessageData::UpdateHubSettings();
+        let data = RPCMessageData::UpdateHubSettings(vec![]);
         let rpc_message = RPCMessage { data };
         assert_eq!(rpc_message.to_string(), "update_hub_settings")
     }
 
     #[test]
     fn rpc_message_data_can_be_displayed() {
-        let data = RPCMessageData::UpdateHubSettings();
-        assert_eq!(data.to_string(), "update_hub_settings")
+        let data = RPCMessageData::UpdatePublisherSettings(vec![]);
+        assert_eq!(data.to_string(), "update_publisher_settings")
     }
 }
