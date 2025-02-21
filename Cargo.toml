@@ -28,7 +28,7 @@ rustis = { version = "0.13", features = ["redis-json", "tokio-runtime"] }
 tokio = { version = "1.43", features = ["full", "rt", "rt-multi-thread"] }
 rsa = { version = "0.9", features = ["pem"] }
 sha2 = "0.10"
-rand = { version = "0.8" }
+rand = { version = "0.9" }
 aes-gcm-siv = { version = "0.11", features = ["std"] }
 redis = { version = "0.29", features = ["tokio-comp", "sentinel"] }
 axum-core = { version = "0.5" }
