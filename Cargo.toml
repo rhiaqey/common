@@ -30,7 +30,7 @@ rsa = { version = "0.9", features = ["pem"] }
 sha2 = "0.10"
 rand = { version = "0.8" }
 aes-gcm-siv = { version = "0.11", features = ["std"] }
-redis = { version = "0.30", features = ["tokio-comp", "sentinel"] }
+redis = { version = "0.31", features = ["tokio-comp", "sentinel"] }
 axum-core = { version = "0.5" }
 hyper = { version = "1.6" }
 rusty_ulid = { version = "2.0" }
