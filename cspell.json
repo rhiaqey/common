@@ -20,7 +20,8 @@
         "rustc",
         "rustis",
         "xadd",
-        "msgpack"
+        "msgpack",
+        "pubsub"
     ],
     "ignoreWords": [],
     "import": []

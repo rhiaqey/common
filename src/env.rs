@@ -137,7 +137,7 @@ impl Env {
 
         trace!("RSA public key is ready");
 
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         let padding = Oaep::new::<sha2::Sha256>();
         let enc_data = rsa_public_key
             .encrypt(&mut rng, padding, data.as_slice())

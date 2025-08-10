@@ -1,22 +1,21 @@
 use serde::{Deserialize, Serialize};
 
 use aes_gcm_siv::{
-    aead::{Aead, KeyInit, OsRng},
+    aead::{Aead, KeyInit},
     Aes256GcmSiv,
     Nonce, // Or `Aes128GcmSiv`
 };
 use anyhow::Context;
-
-use rand::distributions::Alphanumeric;
+use rand::distr::Alphanumeric;
 use rand::Rng;
 
 pub fn generate_key() -> Vec<u8> {
-    let key = Aes256GcmSiv::generate_key(&mut OsRng);
+    let key = Aes256GcmSiv::generate_key().unwrap();
     key.to_vec()
 }
 
 pub fn generate_nonce() -> Vec<u8> {
-    let s: String = rand::thread_rng()
+    let s: String = rand::rng()
         .sample_iter(&Alphanumeric)
         .take(12)
         .map(char::from)
@@ -28,6 +27,7 @@ pub fn aes_encrypt(nonce: &[u8], key: &[u8], data: &[u8]) -> anyhow::Result<Vec<
     let cipher =
         Aes256GcmSiv::new_from_slice(key).context("failed to create aes256gcm from slice")?;
 
+    #[allow(deprecated)]
     let result = cipher
         .encrypt(Nonce::from_slice(nonce), data)
         .context("failed to encrypt")?;
@@ -39,6 +39,7 @@ pub fn aes_decrypt(nonce: &[u8], key: &[u8], data: &[u8]) -> anyhow::Result<Vec<
     let cipher =
         Aes256GcmSiv::new_from_slice(key).context("failed to create aes256gcm from slice")?;
 
+    #[allow(deprecated)]
     let result = cipher
         .decrypt(Nonce::from_slice(nonce), data)
         .context("failed to decrypt")?;
