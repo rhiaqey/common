@@ -138,7 +138,7 @@ impl Env {
         trace!("RSA public key is ready");
 
         let mut rng = rand::rng();
-        let padding = Oaep::new::<sha2::Sha256>();
+        let padding = Oaep::<sha2::Sha256>::new();
         let enc_data = rsa_public_key
             .encrypt(&mut rng, padding, data.as_slice())
             .context("failed to encrypt data")?;
@@ -171,7 +171,7 @@ impl Env {
 
         trace!("RSA private key is ready");
 
-        let padding = Oaep::new::<sha2::Sha256>();
+        let padding = Oaep::<sha2::Sha256>::new();
         let dec_data = rsa_private_key
             .decrypt(padding, data.as_slice())
             .context("failed to decrypt data")?;
