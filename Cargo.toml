@@ -29,6 +29,6 @@ rsa = { version = "0.10.0-rc.10" }
 sha2 = { version = "0.11.0-rc.3" }
 rand = { version = "0.10.0-rc.5" }
 aes-gcm-siv = { version = "0.12.0-rc.2", features = ["aes"] }
-redis = { version = "0.32", features = ["tokio-comp", "sentinel"] }
+redis = { version = "1.0", features = ["tokio-comp", "sentinel"] }
 rusty_ulid = { version = "2.0" }
 anyhow = { version = "1.0" }

@@ -35,17 +35,18 @@ pub fn connect(settings: &RedisSettings) -> anyhow::Result<Client> {
             let master_name = settings.get_sentinel_master_name();
             let db = settings.get_db();
             let mut sentinel = Sentinel::build(nodes).context("failed to build sentinel")?;
+
+            let mut info = RedisConnectionInfo::default()
+                .set_protocol(ProtocolVersion::RESP3)
+                .set_db(db as i64);
+
+            if let Some(password) = settings.get_password() {
+                info = info.set_password(password);
+            }
+
             sentinel.master_for(
                 master_name.as_str(),
-                Some(&SentinelNodeConnectionInfo {
-                    tls_mode: None,
-                    redis_connection_info: Some(RedisConnectionInfo {
-                        db: db as i64,
-                        username: None,
-                        password: settings.get_password(),
-                        protocol: ProtocolVersion::RESP3,
-                    }),
-                }),
+                Some(&SentinelNodeConnectionInfo::default().set_redis_connection_info(info)),
             )
         }
     };
