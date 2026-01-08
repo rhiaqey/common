@@ -12,3 +12,7 @@ prod:
 .PHONY: test
 test:
 	cargo test
+
+.PHONY: format
+format:
+	cargo fmt

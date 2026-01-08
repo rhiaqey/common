@@ -1,6 +1,6 @@
 use crate::redis::RedisMode;
 use crate::redis::RedisSettings;
-use anyhow::{bail, Context};
+use anyhow::{Context, bail};
 use redis::sentinel::{Sentinel, SentinelNodeConnectionInfo};
 use redis::{Client, ProtocolVersion, RedisConnectionInfo};
 

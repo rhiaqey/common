@@ -1,7 +1,7 @@
-use anyhow::{bail, Context};
+use anyhow::{Context, bail};
 use rustis::client::Client;
-use rustis::commands::{ConnectionCommands, PingOptions};
-use rustis::resp::{deserialize_byte_buf, PrimitiveResponse};
+use rustis::commands::ConnectionCommands;
+use rustis::resp::deserialize_byte_buf;
 use serde::{Deserialize, Serialize};
 
 fn default_redis_db() -> String {
@@ -93,7 +93,7 @@ pub async fn connect_and_ping_async(config: RedisSettings) -> anyhow::Result<Cli
 
     let result: String = redis_connection
         .clone()
-        .ping(PingOptions::default().message("hello"))
+        .ping("hello")
         .await
         .context("failed to send PING to redis")?;
     if result != "hello" {
@@ -105,7 +105,6 @@ pub async fn connect_and_ping_async(config: RedisSettings) -> anyhow::Result<Cli
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RhiaqeyBufVec(#[serde(deserialize_with = "deserialize_byte_buf")] pub Vec<u8>);
-impl PrimitiveResponse for RhiaqeyBufVec {}
 
 impl From<Vec<u8>> for RhiaqeyBufVec {
     fn from(value: Vec<u8>) -> Self {

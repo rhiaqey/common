@@ -1,11 +1,11 @@
 use crate::env::Env;
 use crate::pubsub::RPCMessage;
-use crate::redis::{connect_and_ping_async, RhiaqeyBufVec};
+use crate::redis::{RhiaqeyBufVec, connect_and_ping_async};
 use crate::redis_rs::connect_and_ping;
 use crate::security::SecurityKey;
 use crate::stream::StreamMessage;
 use crate::{security, topics};
-use anyhow::{bail, Context};
+use anyhow::{Context, bail};
 use log::{debug, info, trace};
 use redis::Commands;
 use rhiaqey_sdk_rs::channel::{Channel, ChannelList};
@@ -261,8 +261,7 @@ impl Executor {
 
         trace!(
             "message sent to pubsub {} and received {} as reply",
-            clean_topic,
-            reply
+            clean_topic, reply
         );
 
         Ok(reply)

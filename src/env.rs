@@ -1,5 +1,5 @@
 use crate::redis::RedisSettings;
-use anyhow::{bail, Context};
+use anyhow::{Context, bail};
 use log::{debug, trace, warn};
 use rsa::pkcs1::DecodeRsaPrivateKey;
 use rsa::pkcs1::DecodeRsaPublicKey;
