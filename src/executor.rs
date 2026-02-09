@@ -94,9 +94,9 @@ impl Executor {
             .decrypt(security.key)
             .context("failed to decrypt security key")?;
 
-        security.no_once = config
-            .decrypt(security.no_once)
-            .context("failed to decrypt security no_once")?;
+        security.nonce = config
+            .decrypt(security.nonce)
+            .context("failed to decrypt security nonce")?;
 
         debug!("security keys loaded");
 
@@ -170,7 +170,7 @@ impl Executor {
         let keys = self.security.lock().await;
 
         let data = security::aes_decrypt(
-            keys.no_once.as_slice(),
+            keys.nonce.as_slice(),
             keys.key.as_slice(),
             result.0.as_slice(),
         )

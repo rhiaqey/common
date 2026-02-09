@@ -1,18 +1,18 @@
 use serde::{Deserialize, Serialize};
 
-use aes_gcm_siv::Key;
-use aes_gcm_siv::aead::OsRng;
 use aes_gcm_siv::{
-    Aes256GcmSiv,
+    Aes256GcmSiv, Key,
     Nonce, // Or `Aes128GcmSiv`
     aead::{Aead, KeyInit},
 };
-use rand::Rng;
+use rand::RngExt;
 use rand::distr::Alphanumeric;
 
 pub fn generate_key() -> Vec<u8> {
-    let key = Aes256GcmSiv::generate_key(&mut OsRng);
-    key.to_vec()
+    use aes_gcm_siv::aead::KeySizeUser;
+    let mut key = vec![0u8; Aes256GcmSiv::key_size()];
+    rand::rng().fill(&mut key);
+    key
 }
 
 pub fn generate_nonce() -> Vec<u8> {
@@ -25,24 +25,22 @@ pub fn generate_nonce() -> Vec<u8> {
 }
 
 pub fn aes_encrypt(nonce: &[u8], key: &[u8], data: &[u8]) -> anyhow::Result<Vec<u8>> {
-    let key = Key::<Aes256GcmSiv>::from_slice(key);
-    let cipher = Aes256GcmSiv::new(key);
+    let key = Key::<Aes256GcmSiv>::try_from(key).map_err(|err| anyhow::anyhow!(err))?;
+    let cipher = Aes256GcmSiv::new(&key);
 
-    #[allow(deprecated)]
     let result = cipher
-        .encrypt(Nonce::from_slice(nonce), data)
+        .encrypt(&Nonce::try_from(nonce).map_err(|err| anyhow::anyhow!(err))?, data)
         .map_err(|err| anyhow::anyhow!(err))?;
 
     Ok(result)
 }
 
 pub fn aes_decrypt(nonce: &[u8], key: &[u8], data: &[u8]) -> anyhow::Result<Vec<u8>> {
-    let key = Key::<Aes256GcmSiv>::from_slice(key);
-    let cipher = Aes256GcmSiv::new(key);
+    let key = Key::<Aes256GcmSiv>::try_from(key).map_err(|err| anyhow::anyhow!(err))?;
+    let cipher = Aes256GcmSiv::new(&key);
 
-    #[allow(deprecated)]
     let result = cipher
-        .decrypt(Nonce::from_slice(nonce), data)
+        .decrypt(&Nonce::try_from(nonce).map_err(|err| anyhow::anyhow!(err))?, data)
         .map_err(|err| anyhow::anyhow!(err))?;
 
     Ok(result)
@@ -50,22 +48,22 @@ pub fn aes_decrypt(nonce: &[u8], key: &[u8], data: &[u8]) -> anyhow::Result<Vec<
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct SecurityKey {
-    pub no_once: Vec<u8>,
+    pub nonce: Vec<u8>,
     pub key: Vec<u8>,
 }
 
 impl Default for SecurityKey {
     fn default() -> Self {
-        let no_once = generate_nonce();
+        let nonce = generate_nonce();
         let key = generate_key();
-        (no_once, key).into()
+        (nonce, key).into()
     }
 }
 
 impl From<(Vec<u8>, Vec<u8>)> for SecurityKey {
     fn from(message: (Vec<u8>, Vec<u8>)) -> Self {
         SecurityKey {
-            no_once: message.0,
+            nonce: message.0,
             key: message.1,
         }
     }
