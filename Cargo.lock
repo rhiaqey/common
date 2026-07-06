@@ -1013,7 +1013,7 @@ dependencies = [
 [[package]]
 name = "rhiaqey-sdk-rs"
 version = "0.1.2"
-source = "git+https://github.com/rhiaqey/sdk-rs.git#6abd9d3f8a8b2eaea666a20511ea28b5eb7da14b"
+source = "git+https://github.com/rhiaqey/sdk-rs.git#5947f398e790582f829481903b13aac1d6ad723f"
 dependencies = [
  "serde",
  "serde_json",
