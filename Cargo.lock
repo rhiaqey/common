@@ -872,9 +872,9 @@ dependencies = [
 
 [[package]]
 name = "rustis"
-version = "0.22.0"
+version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c6e00d2a4bab4b9d18f5f8729582d1e48076730c7827312abba20dee40663374"
+checksum = "0aea9aa4c4bbcce0b863b5f56aba1d7cf964965e7a4bb2224b3d8971061c8a23"
 dependencies = [
  "atoi",
  "bytes",
@@ -886,6 +886,7 @@ dependencies = [
  "futures-util",
  "itoa",
  "memchr",
+ "pin-project-lite",
  "rand",
  "serde",
  "smallvec",
