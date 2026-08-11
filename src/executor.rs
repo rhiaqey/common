@@ -220,7 +220,7 @@ impl Executor {
     }
 
     pub fn extract_pubsub_message(&mut self, message: PubSubMessage) -> Option<RPCMessage> {
-        serde_json::from_slice::<RPCMessage>(message.payload.as_slice()).ok()
+        serde_json::from_slice::<RPCMessage>(message.payload()).ok()
     }
 
     pub async fn create_hub_to_publishers_pubsub_async(&mut self) -> anyhow::Result<PubSubStream> {
