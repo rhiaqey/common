@@ -888,9 +888,9 @@ dependencies = [
 
 [[package]]
 name = "rustis"
-version = "0.27.2"
+version = "0.27.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "91a06294a0dcd7658e073740d02c4f85bbf3e30e5b33c6e8867b8dbcfbe3953a"
+checksum = "b30e5b94cb8dcbde75c22521355acaefbf0d7c6e61033fd365a2ca80de59c4c9"
 dependencies = [
  "atoi",
  "bytes",
